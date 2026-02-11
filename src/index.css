@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-roboto: "Roboto", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Force apply to all elements */
+ body {
+  font-family: "Roboto", sans-serif !important;
+  background-color: #F6F8FA;
+}
+
+/* Agar aap Tailwind v4 use kar rahe hain toh ye best hai */
+:root {
+  --font-sans: "Roboto", sans-serif;
+}
