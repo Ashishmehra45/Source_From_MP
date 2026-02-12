@@ -3,6 +3,8 @@ import LandingPage from '../pages/LandingPage'
 import GIGalleryFull from '../pages/Gi'
 import ODOP from '../pages/ODOP'
 import ExporterRegistration from '../pages/Register'
+import Login from '../pages/Login'
+import SellerDashboard from '../pages/seller_Dashbord/SellerDashbord'   
 
 
 function Approutes() {
@@ -12,6 +14,9 @@ function Approutes() {
       <Route path='/gi' element={<GIGalleryFull />} />
       <Route path='/odop' element={<ODOP />} />
       <Route path='/register' element={<ExporterRegistration />} />
+      <Route path='/login' element={<Login />} />
+<Route path='/seller/dashboard' element={<SellerDashboard />} /> 
+
       
     </Routes>
   )
