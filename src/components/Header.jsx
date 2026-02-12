@@ -75,7 +75,7 @@ const Header = () => {
           <button className="bg-white border-2 border-[#0B184A] text-[#0B184A] px-7 py-3 rounded-xl text-xs font-bold hover:bg-slate-50 transition">
             Post Requirement
           </button>
-          <button className="bg-[#0B184A] text-white px-7 py-3 rounded-xl text-xs font-bold hover:bg-[white] border-2  border-[#0B184A] hover:text-[#0B184A] transition shadow-lg">
+          <button onClick={() => navigate('/register')}  className="bg-[#0B184A] text-white px-7 py-3 rounded-xl text-xs font-bold hover:bg-[white] border-2  border-[#0B184A] hover:text-[#0B184A] transition shadow-lg">
             Sell Products
           </button>
         </div>
