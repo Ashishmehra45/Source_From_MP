@@ -90,7 +90,7 @@ const Header = () => {
         {/* Right Actions - Desktop Only */}
         <div className="hidden lg:flex items-center gap-4">
           <button className="bg-white border-2 border-[#0B184A] text-[#0B184A] px-7 py-3 rounded-xl text-xs font-bold hover:bg-slate-50 transition">
-            Post Requirement
+            Buy Products
           </button>
           
           {/* ✅ UPDATED: Sell Products Button Logic */}
