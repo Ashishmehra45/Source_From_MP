@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Package } from 'lucide-react';
 import Footer from '../components/Footer';
+import api from '../api/axios'
 
 
 
@@ -28,7 +29,7 @@ const LandingPage = () => {
   const fetchPublicProducts = async () => {
     try {
       // ✅ URL Change kiya: '/my-products' hata kar '/public-products' lagaya
-      const { data } = await axios.get('http://localhost:5000/api/sellers/public-products');
+      const { data } = await api.get('/sellers/public-products');
       
       if (data && data.products) {
           setProducts(data.products);

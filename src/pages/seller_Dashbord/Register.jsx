@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, FileText, CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, MapPin, Lock } from 'lucide-react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom'; // 1. Link import kiya
 import Header from '../../components/Header';
+import api from '../../api/axios' // 2. Axios instance import kiya  
 
 const ExporterRegistration = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -57,7 +57,7 @@ const ExporterRegistration = () => {
     if (selectedFile) data.append('catalog', selectedFile);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/sellers/register', data, {
+      const response = await api.post('/sellers/register', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 

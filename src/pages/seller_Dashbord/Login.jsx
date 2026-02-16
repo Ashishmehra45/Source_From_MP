@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Lock, ChevronRight, MapPin, LogIn, Eye, EyeOff } from 'lucide-react';
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import Header from '../../components/Header';
 import { Link, useNavigate } from 'react-router-dom';
+import api from '../../api/axios'
 
 const Login = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const Login = () => {
     });
 
     try {
-      const response = await axios.post('http://localhost:5000/api/sellers/login', formData);
+      const response = await api.post('/sellers/login', formData);
 
       if (response.status === 200) {
         // Token save karne ka logic (Industry Standard)

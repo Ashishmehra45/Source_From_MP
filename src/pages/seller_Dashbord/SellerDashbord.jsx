@@ -23,6 +23,7 @@ import Swal from "sweetalert2";
 import Header from "../../components/Header";
 import axios from "axios";
 import Footer from "../../components/Footer";
+import api from '../../api/axios' // 1. Axios instance import kiya
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -71,8 +72,8 @@ const Dashboard = () => {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const { data } = await axios.get(
-        "http://localhost:5000/api/sellers/my-products",
+      const { data } = await api.get(
+        "/api/sellers/my-products",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
@@ -109,7 +110,7 @@ const Dashboard = () => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("token");
-          await axios.delete(`http://localhost:5000/api/sellers/delete-product/${productId}`, {
+          await api.delete(`/sellers/delete-product/${productId}`, {
             headers: { Authorization: `Bearer ${token}` }
           });
           
@@ -191,7 +192,7 @@ const Dashboard = () => {
 
         try {
           const token = localStorage.getItem("token");
-          await axios.put(`http://localhost:5000/api/sellers/update-product/${product._id}`, formData, {
+          await api.put(`/sellers/update-product/${product._id}`, formData, {
             headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
           });
           fetchProducts();
@@ -311,8 +312,8 @@ const Dashboard = () => {
             throw new Error("You are not logged in!");
           }
 
-          const response = await axios.post(
-            "http://localhost:5000/api/sellers/add-product",
+          const response = await api.post(
+            "/sellers/add-product",
             formData,
             {
               headers: {
