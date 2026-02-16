@@ -43,7 +43,7 @@ const ExporterRegistration = () => {
     if (e.target.files[0]) setSelectedFile(e.target.files[0]);
   };
 
-  const handleFinalSubmit = async (e) => {
+ const handleFinalSubmit = async (e) => {
     e.preventDefault();
 
     Swal.fire({
@@ -63,13 +63,18 @@ const ExporterRegistration = () => {
       });
 
       if (response.status === 201) {
+        // ✅ Success Alert confirm hone ke baad hi redirect hoga
         Swal.fire({
           icon: 'success',
           title: 'Success!',
           text: 'Registration Submitted Successfully.',
-          confirmButtonColor: '#10b981'
+          confirmButtonColor: '#10b981',
+          confirmButtonText: 'Login Now' 
+        }).then((result) => {
+          if (result.isConfirmed) {
+            navigate('/login'); // Redirect to login
+          }
         });
-        navigate('/login'); 
       }
     } catch (error) {
       Swal.fire({
