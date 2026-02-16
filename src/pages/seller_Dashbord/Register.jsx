@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, FileText, CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, MapPin, Lock } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import Header from '../components/Header';
+import Header from '../../components/Header';
 
 const ExporterRegistration = () => {
   const [currentStep, setCurrentStep] = useState(1);

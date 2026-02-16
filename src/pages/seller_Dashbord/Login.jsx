@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Mail, Lock, ChevronRight, MapPin, LogIn, Eye, EyeOff } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import Header from '../components/Header';
+import Header from '../../components/Header';
 import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
