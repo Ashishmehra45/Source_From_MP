@@ -92,20 +92,19 @@ const Dashboard = () => {
 
  
 
+// ✅ Correct Helper for /api/uploads structure
 const getImageUrl = (path) => {
   if (!path) return "";
 
-  // 1. Axios config se current baseURL uthao (e.g., http://localhost:5000/api)
+  // 1. Direct baseURL uthao (e.g., https://...onrender.com/api)
   const baseUrl = api.defaults.baseURL;
 
-  
-  const serverUrl = baseUrl.replace('/api', '');
-
- 
+  // 2. Windows backslash fix karo
   const cleanPath = path.replace(/\\/g, "/");
 
-  // 4. Dono ko combine karo
-  return `${serverUrl}/${cleanPath}`;
+  // 3. Agar path mein pehle se 'uploads/' hai, toh direct combine karo
+  // URL aisa banega: https://...onrender.com/api/uploads/filename.png
+  return `${baseUrl}/${cleanPath}`;
 };
 
   // --- DELETE LOGIC ---
