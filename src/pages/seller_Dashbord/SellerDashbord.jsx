@@ -91,20 +91,20 @@ const Dashboard = () => {
   }, []);
 
  
-
-// ✅ Correct Helper for /api/uploads structure
 const getImageUrl = (path) => {
   if (!path) return "";
 
-  // 1. Direct baseURL uthao (e.g., https://...onrender.com/api)
+  // 1. Aapka baseURL (e.g., https://.../api)
   const baseUrl = api.defaults.baseURL;
 
-  // 2. Windows backslash fix karo
+  // 2. '/api' ko hatao taaki main server URL mil jaye (e.g., https://...)
+  const serverUrl = baseUrl.replace('/api', '');
+
+  // 3. Windows path fix
   const cleanPath = path.replace(/\\/g, "/");
 
-  // 3. Agar path mein pehle se 'uploads/' hai, toh direct combine karo
-  // URL aisa banega: https://...onrender.com/api/uploads/filename.png
-  return `${baseUrl}/${cleanPath}`;
+  // 4. Final URL: https://domain.com/uploads/image.png
+  return `${serverUrl}/${cleanPath}`;
 };
 
   // --- DELETE LOGIC ---
