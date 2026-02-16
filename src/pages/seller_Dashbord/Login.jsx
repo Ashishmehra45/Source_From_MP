@@ -19,32 +19,44 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleLogin = async (e) => {
+const handleLogin = async (e) => {
     e.preventDefault();
 
+    // 1. Loading Alert (Standard Center)
     Swal.fire({
       title: 'Verifying...',
-      didOpen: () => { Swal.showLoading(); }
+      text: 'Checking your credentials',
+      allowOutsideClick: false,
+      didOpen: () => { 
+        Swal.showLoading(); 
+      }
     });
 
     try {
       const response = await api.post('/sellers/login', formData);
 
       if (response.status === 200) {
-        // Token save karne ka logic (Industry Standard)
+        // ✅ Data Save Logic
         localStorage.setItem('token', response.data.token);
+        localStorage.setItem('companyName', response.data.companyName);
         
+        // ✅ 2. Classic Success Alert (Centered)
         Swal.fire({
           icon: 'success',
           title: 'Welcome Back!',
-          text: 'Login successful.',
-          timer: 1500,
-          showConfirmButton: false
+          text: `Logged in as ${response.data.companyName}`,
+          confirmButtonColor: '#10b981',
+          confirmButtonText: 'Go to Dashboard',
+          timer: 2000, // Optional: apne aap bhi chala jayega
+          timerProgressBar: true
+        }).then((result) => {
+          // Alert close hone par ya button click par navigate karega
+          navigate('/seller/dashboard');
         });
-        
-        navigate('/seller/dashboard'); // Login ke baad redirection
       }
     } catch (error) {
+      console.error("Login Error:", error);
+      // ✅ 3. Error Alert
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
