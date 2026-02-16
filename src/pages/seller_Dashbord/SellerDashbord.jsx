@@ -73,7 +73,7 @@ const Dashboard = () => {
     try {
       const token = localStorage.getItem("token");
       const { data } = await api.get(
-        "/api/sellers/my-products",
+        "/sellers/my-products",
         {
           headers: { Authorization: `Bearer ${token}` },
         },
