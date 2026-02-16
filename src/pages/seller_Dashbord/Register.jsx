@@ -2,11 +2,12 @@ import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, FileText, CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, MapPin, Lock } from 'lucide-react';
 import Swal from 'sweetalert2';
-import { Link } from 'react-router-dom'; // 1. Link import kiya
+import { Link, useNavigate } from 'react-router-dom'; // 1. Link import kiya
 import Header from '../../components/Header';
 import api from '../../api/axios' // 2. Axios instance import kiya  
 
 const ExporterRegistration = () => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -68,6 +69,7 @@ const ExporterRegistration = () => {
           text: 'Registration Submitted Successfully.',
           confirmButtonColor: '#10b981'
         });
+        navigate('/login'); 
       }
     } catch (error) {
       Swal.fire({
