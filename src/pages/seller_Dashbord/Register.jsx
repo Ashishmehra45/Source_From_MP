@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, FileText, CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, MapPin, Lock } from 'lucide-react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom'; // 1. Link import kiya
 import Header from '../../components/Header';
 
 const ExporterRegistration = () => {
@@ -29,9 +30,8 @@ const ExporterRegistration = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  // Logic to prevent submission on Step 1
   const nextStep = (e) => {
-    if (e) e.preventDefault(); // Click event prevent karega
+    if (e) e.preventDefault();
     setCurrentStep(2);
   };
 
@@ -132,7 +132,7 @@ const ExporterRegistration = () => {
           })}
         </div>
 
-        {/* FORM SECTION - logic updated here */}
+        {/* FORM SECTION */}
         <form onSubmit={handleFinalSubmit} className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-slate-100 min-h-[450px] flex flex-col transition-all overflow-hidden">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
@@ -176,7 +176,6 @@ const ExporterRegistration = () => {
               <ChevronLeft size={16} /> Back
             </button>
             
-            {/* Logic Fix: Continue button ab "button" type ka hai, submit nahi karega */}
             {currentStep === 1 ? (
               <button 
                 type="button" 
@@ -195,6 +194,17 @@ const ExporterRegistration = () => {
             )}
           </div>
         </form>
+
+        {/* 2. LOGIN LINK ADDED HERE */}
+        <div className="text-center mt-8">
+          <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
+            Already have an Account?{' '}
+            <Link to="/login" className="text-blue-600 hover:text-blue-800 transition-colors ml-1 decoration-2 hover:underline underline-offset-4">
+              Login Now
+            </Link>
+          </p>
+        </div>
+
       </div>
     </div>
   );

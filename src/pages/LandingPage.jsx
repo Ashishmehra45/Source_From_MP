@@ -1,8 +1,12 @@
 
 import React from 'react';
-import { Search, MapPin, Utensils, Coffee, ShoppingBag, Music, Hotel, ChevronRight, Globe, User } from 'lucide-react';
+import { Search, MapPin, Utensils, Coffee, ShoppingBag, Music, Hotel, ChevronRight, Globe, User ,ArrowRight} from 'lucide-react';
 import Header from '../components/Header';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Package } from 'lucide-react';
+import Footer from '../components/Footer';
 
 
 
@@ -12,7 +16,41 @@ const IconChevron = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" hei
 
 const LandingPage = () => {
 
-    const navigate = useNavigate();
+  
+  const navigate = useNavigate();
+
+  // ✅ YE LINES ADD KARNI HAIN (Jo missing hain)
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // ✅ YE EFFECT BHI ADD KARNA HAI (Data lane ke liye)
+ useEffect(() => {
+  const fetchPublicProducts = async () => {
+    try {
+      // ✅ URL Change kiya: '/my-products' hata kar '/public-products' lagaya
+      const { data } = await axios.get('http://localhost:5000/api/sellers/public-products');
+      
+      if (data && data.products) {
+          setProducts(data.products);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Error loading products:", error);
+      setLoading(false);
+    }
+  };
+
+  fetchPublicProducts();
+}, []);
+
+  // ✅ Image URL Helper Function
+  const getImageUrl = (path) => {
+    if(!path) return '';
+    const cleanPath = path.replace(/\\/g, "/");
+    return `http://localhost:5000/${cleanPath}`;
+  };
+
+   
 
   const departments = [
     "GI Products","ODOP Products", "Food & Beverage", "Agriculture", "Sports & Entertainment",
@@ -163,39 +201,100 @@ const LandingPage = () => {
   ))}
 </div>
   </section>
+
+  <section className="py-20 px-4 md:px-12 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-[1800px] mx-auto">
+          
+          {/* Section Header */}
+          <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+            <div>
+               <span className="text-blue-600 font-black tracking-widest uppercase text-xs mb-2 block">Fresh from Factories</span>
+               <h3 className="text-3xl md:text-5xl font-black text-[#0B184A] tracking-tight">
+                 Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Export Products</span>
+               </h3>
+            </div>
+            <button className="group flex items-center gap-2 font-bold text-[#0B184A] hover:text-blue-600 transition-colors border-b-2 border-transparent hover:border-blue-600 pb-1">
+              View All Marketplace <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform"/>
+            </button>
+          </div>
+
+          {/* Product Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            {/* Loading State */}
+            {loading && [1,2,3,4].map((n) => (
+              <div key={n} className="h-[400px] bg-white rounded-[2.5rem] animate-pulse"></div>
+            ))}
+
+            {/* Products Mapping */}
+            {!loading && products.map((product) => (
+              <div key={product._id} className="group bg-white rounded-[2.5rem] p-4 border border-slate-200 shadow-sm hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] transition-all duration-500 hover:-translate-y-2 flex flex-col">
+                
+                {/* Image Area */}
+                <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-slate-100 mb-5">
+                  {product.image ? (
+                    <img 
+                      src={getImageUrl(product.image)} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                      <Package size={48} />
+                    </div>
+                  )}
+                  
+                  {/* Badge */}
+                  <div className="absolute top-4 left-4 bg-[#0B184A]/90 backdrop-blur text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                    Export Ready
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-2 flex-1 flex flex-col">
+                  <p className="text-blue-600 text-[10px] font-black uppercase tracking-widest mb-2">
+                    {product.category}
+                  </p>
+                  <h4 className="text-xl font-black text-[#0B184A] leading-tight mb-2 line-clamp-1 group-hover:text-blue-700 transition-colors">
+                    {product.name}
+                  </h4>
+                  <p className="text-slate-500 text-xs font-medium line-clamp-2 mb-4 h-8">
+                    {product.description || "Premium quality export product available for bulk orders."}
+                  </p>
+
+                  {/* HS Code & Action */}
+                  <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+                    <div>
+                      <span className="block text-[9px] font-black text-slate-400 uppercase">HS Code</span>
+                      <span className="font-mono font-bold text-slate-700 text-sm">{product.hscode || 'N/A'}</span>
+                    </div>
+                    <button className="bg-[#0B184A] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/20 active:scale-95">
+                      Inquire
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Empty State (Agar products nahi hain) */}
+            {!loading && products.length === 0 && (
+               <div className="col-span-full text-center py-20 bg-white rounded-[3rem] border border-dashed border-slate-300">
+                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package size={32} className="text-slate-300"/>
+                  </div>
+                  <h3 className="font-bold text-slate-500">No products listed yet</h3>
+                  <p className="text-slate-400 text-sm">Be the first exporter to list!</p>
+               </div>
+            )}
+
+          </div>
+        </div>
+      </section>
+    
 </main>
 
       {/* 6. TRUST FOOTER - FULL WIDTH */}
-      <footer className="w-full bg-slate-900 text-white mt-24 py-20 px-12">
-        <div className="max-w-[1800px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-20">
-          <div className="col-span-1 md:col-span-1 space-y-6">
-            <h4 className="font-black text-2xl tracking-tighter italic">Madhya Pradesh PORTAL</h4>
-            <p className="text-slate-400 text-sm leading-relaxed font-medium">
-              An initiative of Federation of Indian Export Organisations (FIEO). The apex body of government recognized export organizations in India.
-            </p>
-          </div>
-          <div className="space-y-6 text-sm font-bold text-slate-400">
-             <h5 className="text-white uppercase tracking-widest text-xs">Marketplace</h5>
-             <p className="hover:text-white cursor-pointer transition">Browse GI Products</p>
-             <p className="hover:text-white cursor-pointer transition">Verified Suppliers</p>
-             <p className="hover:text-white cursor-pointer transition">B2B Enquiries</p>
-          </div>
-          <div className="space-y-6 text-sm font-bold text-slate-400">
-             <h5 className="text-white uppercase tracking-widest text-xs">Policies</h5>
-             <p className="hover:text-white cursor-pointer transition">Trade Policy 2026</p>
-             <p className="hover:text-white cursor-pointer transition">Privacy & Compliance</p>
-             <p className="hover:text-white cursor-pointer transition">Cookie Settings</p>
-          </div>
-          <div className="space-y-6">
-             <h5 className="text-white uppercase tracking-widest text-xs mb-4">Connect with FIEO</h5>
-             <div className="flex gap-4">
-                <div className="w-10 h-10 bg-slate-800 rounded-lg hover:bg-blue-600 transition cursor-pointer"></div>
-                <div className="w-10 h-10 bg-slate-800 rounded-lg hover:bg-blue-600 transition cursor-pointer"></div>
-                <div className="w-10 h-10 bg-slate-800 rounded-lg hover:bg-blue-600 transition cursor-pointer"></div>
-             </div>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

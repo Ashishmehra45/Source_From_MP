@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { MapPin, Award, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';   
 import GIBanner from '../assets/GI_Banner.jpeg'; // Ensure you have this image in your assets folder
+import Footer from '../components/Footer';
 
 const GIGalleryFull = () => {
   // Complete 33 GI Products Data extracted from your PDF
@@ -193,6 +194,7 @@ const GIGalleryFull = () => {
           })}
         </motion.div>
       </div>
+      <Footer />
     </div>
   );
 };

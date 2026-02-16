@@ -4,7 +4,7 @@ import { MapPin, ArrowUpRight, Award, CheckCircle } from 'lucide-react';
 import Header from '../components/Header';
 // Banner import (Same path as before)
 import ODOpBanner from '../assets/GI_Banner.jpeg'; 
-
+import Footer from '../components/Footer';
 const ODOPGallery = () => {
   const odopProducts = [
     { city: "AgarMalwa", product: "Orange", icon: "🍊", theme: "orange" },
@@ -170,6 +170,7 @@ const ODOPGallery = () => {
           })}
         </motion.div>
       </div>
+      <Footer />
     </div>
   );
 };
