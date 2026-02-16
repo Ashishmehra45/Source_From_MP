@@ -90,11 +90,23 @@ const Dashboard = () => {
     fetchProducts();
   }, []);
 
-  const getImageUrl = (path) => {
-    if (!path) return "";
-    const cleanPath = path.replace(/\\/g, "/");
-    return `http://localhost:5000/${cleanPath}`;
-  };
+ 
+
+const getImageUrl = (path) => {
+  if (!path) return "";
+
+  // 1. Axios config se current baseURL uthao (e.g., http://localhost:5000/api)
+  const baseUrl = api.defaults.baseURL;
+
+  
+  const serverUrl = baseUrl.replace('/api', '');
+
+ 
+  const cleanPath = path.replace(/\\/g, "/");
+
+  // 4. Dono ko combine karo
+  return `${serverUrl}/${cleanPath}`;
+};
 
   // --- DELETE LOGIC ---
   const handleDeleteProduct = async (productId) => {

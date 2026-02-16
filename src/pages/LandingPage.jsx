@@ -45,12 +45,21 @@ const LandingPage = () => {
 }, []);
 
   // ✅ Image URL Helper Function
-  const getImageUrl = (path) => {
-    if(!path) return '';
-    const cleanPath = path.replace(/\\/g, "/");
-    return `http://localhost:5000/${cleanPath}`;
-  };
+const getImageUrl = (path) => {
+  if (!path) return "";
 
+  // 1. Axios config se current baseURL uthao (e.g., http://localhost:5000/api)
+  const baseUrl = api.defaults.baseURL;
+
+  // 2. '/api' ko hatao taaki main server URL mil jaye
+  const serverUrl = baseUrl.replace('/api', '');
+
+  // 3. Windows path (\\) ko web path (/) mein badlo
+  const cleanPath = path.replace(/\\/g, "/");
+
+  // 4. Dono ko combine karo
+  return `${serverUrl}/${cleanPath}`;
+};
    
 
   const departments = [
