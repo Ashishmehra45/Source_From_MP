@@ -23,16 +23,16 @@ import Swal from "sweetalert2";
 import Header from "../../components/Header";
 import axios from "axios";
 import Footer from "../../components/Footer";
-import api from '../../api/axios' // 1. Axios instance import kiya
+import api from "../../api/axios"; // 1. Axios instance import kiya
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // 1. Seller Name from LocalStorage (Login ke time save karna chahiye)
-  const sellerName = localStorage.getItem('companyName') || "Valued Exporter";
+  const sellerName = localStorage.getItem("companyName") || "Valued Exporter";
 
   const navItems = [
     { id: "dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -72,12 +72,9 @@ const Dashboard = () => {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("token");
-      const { data } = await api.get(
-        "/sellers/my-products",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const { data } = await api.get("/sellers/my-products", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setProducts(data.products);
       setLoading(false);
     } catch (error) {
@@ -90,46 +87,29 @@ const Dashboard = () => {
     fetchProducts();
   }, []);
 
- 
-const getImageUrl = (path) => {
-  if (!path) return "";
-
-  // 1. Aapka baseURL (e.g., https://.../api)
-  const baseUrl = api.defaults.baseURL;
-
-  // 2. '/api' ko hatao taaki main server URL mil jaye (e.g., https://...)
-  const serverUrl = baseUrl.replace('/api', '');
-
-  // 3. Windows path fix
-  const cleanPath = path.replace(/\\/g, "/");
-
-  // 4. Final URL: https://domain.com/uploads/image.png
-  return `${serverUrl}/${cleanPath}`;
-};
-
   // --- DELETE LOGIC ---
   const handleDeleteProduct = async (productId) => {
     Swal.fire({
-      title: 'Are you sure?',
+      title: "Are you sure?",
       text: "You won't be able to revert this!",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           const token = localStorage.getItem("token");
           await api.delete(`/sellers/delete-product/${productId}`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           fetchProducts(); // Refresh list
-          
-          Swal.fire('Deleted!', 'Your product has been deleted.', 'success');
+
+          Swal.fire("Deleted!", "Your product has been deleted.", "success");
         } catch (error) {
-          Swal.fire('Error!', 'Failed to delete product.', 'error');
+          Swal.fire("Error!", "Failed to delete product.", "error");
         }
       }
     });
@@ -138,7 +118,8 @@ const getImageUrl = (path) => {
   // --- EDIT LOGIC (Reuse Add Form with Pre-filled Data) ---
   const handleEditProduct = (product) => {
     Swal.fire({
-      title: '<span style="font-weight: 800; color: #1e293b;">Edit Product</span>',
+      title:
+        '<span style="font-weight: 800; color: #1e293b;">Edit Product</span>',
       html: `
         <div style="text-align: left; font-family: 'Inter', sans-serif; padding: 0 5px;">
           <div style="margin-bottom: 12px;">
@@ -148,7 +129,7 @@ const getImageUrl = (path) => {
           <div style="display: flex; gap: 10px; margin-bottom: 12px;">
               <div style="flex: 1;">
                   <label style="font-size: 10px; font-weight: 900; text-transform: uppercase; color:#64748b; letter-spacing: 0.1em; margin-left: 4px;">HS Code</label>
-                  <input id="p-hscode" value="${product.hscode || ''}" class="swal2-input" style="border-radius: 12px; font-size: 14px; font-weight: 600; width: 100%; margin: 5px 0 0 0; border: 2px solid #e2e8f0; box-shadow: none; padding: 10px;">
+                  <input id="p-hscode" value="${product.hscode || ""}" class="swal2-input" style="border-radius: 12px; font-size: 14px; font-weight: 600; width: 100%; margin: 5px 0 0 0; border: 2px solid #e2e8f0; box-shadow: none; padding: 10px;">
               </div>
               <div style="flex: 1;">
                   <label style="font-size: 10px; font-weight: 900; text-transform: uppercase; color:#64748b; letter-spacing: 0.1em; margin-left: 4px;">Category</label>
@@ -176,7 +157,7 @@ const getImageUrl = (path) => {
           </div>
           <div style="margin-bottom: 5px;">
             <label style="font-size: 10px; font-weight: 900; text-transform: uppercase; color:#64748b; letter-spacing: 0.1em; margin-left: 4px;">Description</label>
-            <textarea id="p-desc" class="swal2-textarea" style="border-radius: 12px; font-size: 14px; font-weight: 600; width: 100%; height: 80px; margin: 5px 0 0 0; border: 2px solid #e2e8f0; box-shadow: none; padding: 10px; resize: none;">${product.desc || ''}</textarea>
+            <textarea id="p-desc" class="swal2-textarea" style="border-radius: 12px; font-size: 14px; font-weight: 600; width: 100%; height: 80px; margin: 5px 0 0 0; border: 2px solid #e2e8f0; box-shadow: none; padding: 10px; resize: none;">${product.desc || ""}</textarea>
           </div>
         </div>
       `,
@@ -199,12 +180,15 @@ const getImageUrl = (path) => {
         formData.append("hscode", hscode);
         formData.append("category", category);
         formData.append("desc", desc);
-        if(image) formData.append("product_image", image);
+        if (image) formData.append("image", image);
 
         try {
           const token = localStorage.getItem("token");
           await api.put(`/sellers/update-product/${product._id}`, formData, {
-            headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
+            },
           });
           fetchProducts();
           Swal.fire("Success", "Product updated!", "success");
@@ -305,7 +289,7 @@ const getImageUrl = (path) => {
         formData.append("hscode", hscode);
         formData.append("category", category);
         formData.append("desc", desc);
-        formData.append("product_image", image);
+        formData.append("image", image);
 
         try {
           Swal.fire({
@@ -323,16 +307,12 @@ const getImageUrl = (path) => {
             throw new Error("You are not logged in!");
           }
 
-          const response = await api.post(
-            "/sellers/add-product",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-                Authorization: `Bearer ${token}`,
-              },
+          const response = await api.post("/sellers/add-product", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Authorization: `Bearer ${token}`,
             },
-          );
+          });
 
           // Refresh products list after adding
           fetchProducts();
@@ -514,7 +494,7 @@ const getImageUrl = (path) => {
                       <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-100 border-b border-slate-50">
                         {product.image ? (
                           <img
-                            src={getImageUrl(product.image)}
+                            src={product.image} // ✅ Seedha URL use karo
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                           />
@@ -579,17 +559,17 @@ const getImageUrl = (path) => {
 
                           <div className="flex gap-2">
                             {/* EDIT BUTTON */}
-                            <button 
-                                onClick={() => handleEditProduct(product)}
-                                className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
+                            <button
+                              onClick={() => handleEditProduct(product)}
+                              className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
                             >
                               <Edit size={15} strokeWidth={2.5} />
                             </button>
-                            
+
                             {/* DELETE BUTTON */}
-                            <button 
-                                onClick={() => handleDeleteProduct(product._id)}
-                                className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all shadow-sm"
+                            <button
+                              onClick={() => handleDeleteProduct(product._id)}
+                              className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all shadow-sm"
                             >
                               <Trash2 size={15} strokeWidth={2.5} />
                             </button>
