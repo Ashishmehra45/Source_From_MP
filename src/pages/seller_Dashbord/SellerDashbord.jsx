@@ -23,7 +23,7 @@ import Swal from "sweetalert2";
 import Header from "../../components/Header";
 import axios from "axios";
 import Footer from "../../components/Footer";
-import api from "../../api/axios"; // 1. Axios instance import kiya
+import api from "../../api/axios"; 
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -31,7 +31,7 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // 1. Seller Name from LocalStorage (Login ke time save karna chahiye)
+  // ✅ FIX: Consistent key name for Seller
   const sellerName = localStorage.getItem("companyName") || "Valued Exporter";
 
   const navItems = [
@@ -41,6 +41,7 @@ const Dashboard = () => {
     { id: "settings", icon: Settings, label: "Account" },
   ];
 
+  // ✅ UPDATED LOGOUT: Sirf Seller ka data clear karega
   const handleLogout = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -53,8 +54,10 @@ const Dashboard = () => {
       cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("companyName"); // Clear name too
+        // Sirf Seller ki keys delete kar rahe hain
+        localStorage.removeItem("sellerToken");
+        localStorage.removeItem("companyName"); 
+        
         Swal.fire({
           title: "Logged Out!",
           text: "See you soon.",
@@ -63,28 +66,51 @@ const Dashboard = () => {
           showConfirmButton: false,
         });
         setTimeout(() => {
-          navigate("/login");
+          navigate("/seller/login", { replace: true });
         }, 1500);
       }
     });
   };
+  
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem("token");
+      // ✅ FIX: Use 'sellerToken'
+      const token = localStorage.getItem("sellerToken");
+      
+      if (!token) {
+        navigate("/seller/login", { replace: true });
+        return;
+      }
+
       const { data } = await api.get("/sellers/my-products", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
       setProducts(data.products);
       setLoading(false);
+
     } catch (error) {
       console.error("Error fetching products", error);
       setLoading(false);
+
+      // ✅ FIX: Unauthorized ya Forbidden error par clean redirect
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        localStorage.removeItem("sellerToken"); 
+        localStorage.removeItem("companyName");
+        navigate("/seller/login", { replace: true }); 
+      }
     }
   };
 
   useEffect(() => {
-    fetchProducts();
+    // ✅ FIX: Initial Security Check
+    const token = localStorage.getItem("sellerToken");
+    if (!token) {
+        navigate("/seller/login", { replace: true });
+    } else {
+        fetchProducts();
+    }
   }, []);
 
   // --- DELETE LOGIC ---
@@ -100,12 +126,12 @@ const Dashboard = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const token = localStorage.getItem("token");
+          const token = localStorage.getItem("sellerToken"); // ✅ Use sellerToken
           await api.delete(`/sellers/delete-product/${productId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
-          fetchProducts(); // Refresh list
+          fetchProducts(); 
 
           Swal.fire("Deleted!", "Your product has been deleted.", "success");
         } catch (error) {
@@ -115,7 +141,7 @@ const Dashboard = () => {
     });
   };
 
-  // --- EDIT LOGIC (Reuse Add Form with Pre-filled Data) ---
+  // --- EDIT LOGIC ---
   const handleEditProduct = (product) => {
     Swal.fire({
       title:
@@ -183,7 +209,7 @@ const Dashboard = () => {
         if (image) formData.append("image", image);
 
         try {
-          const token = localStorage.getItem("token");
+          const token = localStorage.getItem("sellerToken"); // ✅ Use sellerToken
           await api.put(`/sellers/update-product/${product._id}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
@@ -301,7 +327,7 @@ const Dashboard = () => {
             },
           });
 
-          const token = localStorage.getItem("token");
+          const token = localStorage.getItem("sellerToken"); // ✅ FIX: Use sellerToken
 
           if (!token) {
             throw new Error("You are not logged in!");
@@ -314,7 +340,6 @@ const Dashboard = () => {
             },
           });
 
-          // Refresh products list after adding
           fetchProducts();
 
           Swal.fire({
@@ -460,9 +485,8 @@ const Dashboard = () => {
               ))}
             </div>
 
-            {/* --- PROFESSIONAL CATALOG GRID (Perfectly Aligned) --- */}
+            {/* --- PROFESSIONAL CATALOG GRID --- */}
             <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10 overflow-hidden mb-12">
-              {/* Header Section */}
               <div className="flex items-center justify-between mb-8 px-2">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
@@ -483,18 +507,16 @@ const Dashboard = () => {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                {/* 1. PRODUCT CARD - MAPPED */}
                 {!loading &&
                   products.map((product) => (
                     <div
                       key={product._id}
                       className="group flex flex-col h-full bg-white rounded-[2rem] border border-slate-100 hover:border-blue-100 shadow-sm hover:shadow-[0_20px_40px_rgba(8,_112,_184,_0.08)] transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
-                      {/* IMAGE TOP (Fixed Aspect Ratio for Alignment) */}
                       <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-100 border-b border-slate-50">
                         {product.image ? (
                           <img
-                            src={product.image} // ✅ Seedha URL use karo
+                            src={product.image}
                             alt={product.name}
                             className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                           />
@@ -504,7 +526,6 @@ const Dashboard = () => {
                           </div>
                         )}
 
-                        {/* Status Badge */}
                         <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm border border-slate-100 px-3 py-1.5 rounded-full flex items-center gap-1.5 z-10">
                           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                           <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">
@@ -512,7 +533,6 @@ const Dashboard = () => {
                           </span>
                         </div>
 
-                        {/* Category Chip (Overlay Bottom Left) */}
                         <div className="absolute bottom-4 left-4">
                           <span className="px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur text-[#0B184A] font-bold text-[10px] uppercase tracking-wider shadow-sm border border-slate-100">
                             {product.category}
@@ -520,21 +540,17 @@ const Dashboard = () => {
                         </div>
                       </div>
 
-                      {/* CONTENT BODY (Flex Grow to push footer down) */}
                       <div className="flex-1 p-6 flex flex-col">
                         <div className="mb-auto">
-                          {/* Title */}
                           <h4 className="font-black text-[#0B184A] text-lg leading-snug mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
                             {product.name}
                           </h4>
 
-                          {/* Description */}
                           <p className="text-slate-500 text-xs font-medium leading-relaxed line-clamp-2 h-[2.5em] mb-4">
                             {product.description ||
                               "No description provided for this item."}
                           </p>
 
-                          {/* HS Code Pill */}
                           <div className="inline-flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
                               HS Code
@@ -545,7 +561,6 @@ const Dashboard = () => {
                           </div>
                         </div>
 
-                        {/* FOOTER ACTION (Always at bottom) */}
                         <div className="mt-6 pt-5 border-t border-slate-50 flex items-center justify-between">
                           <div className="flex items-center gap-2 text-slate-400">
                             <CheckCircle
@@ -558,7 +573,6 @@ const Dashboard = () => {
                           </div>
 
                           <div className="flex gap-2">
-                            {/* EDIT BUTTON */}
                             <button
                               onClick={() => handleEditProduct(product)}
                               className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
@@ -566,7 +580,6 @@ const Dashboard = () => {
                               <Edit size={15} strokeWidth={2.5} />
                             </button>
 
-                            {/* DELETE BUTTON */}
                             <button
                               onClick={() => handleDeleteProduct(product._id)}
                               className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all shadow-sm"
@@ -579,7 +592,6 @@ const Dashboard = () => {
                     </div>
                   ))}
 
-                {/* 2. ADD NEW PRODUCT CARD (Height Matched) */}
                 <button
                   onClick={addProductAlert}
                   className="group flex flex-col h-full min-h-[420px] bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 relative overflow-hidden text-left"
@@ -600,7 +612,6 @@ const Dashboard = () => {
                 </button>
               </div>
 
-              {/* Empty State */}
               {!loading && products.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-20 opacity-50">
                   <Package size={48} className="text-slate-300 mb-4" />
@@ -611,7 +622,6 @@ const Dashboard = () => {
               )}
             </div>
 
-            {/* Seller Portal Footer */}
             <p className="text-center text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] opacity-50 pb-8">
               Seller Portal • Source From MP • 2026
             </p>

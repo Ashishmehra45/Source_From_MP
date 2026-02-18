@@ -6,22 +6,46 @@ const Header = () => {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // --- 🔥 AUTH CHECK LOGIC ---
-  const handleAuthNavigation = () => {
-    const token = localStorage.getItem('token');
-    
-    if (token) {
-      // Agar Token hai -> Dashboard par bhejo
+  // --- 🔥 1. SELLER LOGIC (Updated to sellerToken) ---
+  const handleSellerNavigation = () => {
+    const sellerToken = localStorage.getItem('sellerToken'); // ✅ FIX: Used sellerToken
+    if (sellerToken) {
       navigate('/seller/dashboard');
     } else {
-      // Agar Token nahi hai -> Login par bhejo
-      navigate('/login');
+      navigate('/seller/login');
+    }
+  };
+
+  // --- 🔥 2. BUYER LOGIC (Updated to buyerToken) ---
+  const handleBuyerNavigation = () => {
+    const buyerToken = localStorage.getItem('buyerToken'); // ✅ FIX: Used buyerToken
+    const buyerInfo = JSON.parse(localStorage.getItem('buyerInfo'));
+    
+    if (buyerToken && buyerInfo && buyerInfo.role === 'buyer') {
+      navigate('/buyer/dashboard');
+    } else {
+      navigate('/buyer/login'); 
+    }
+  };
+
+  // --- 🔥 3. GENERIC ACCOUNT LOGIC (Smart Switch) ---
+  const handleAccountNavigation = () => {
+    const sellerToken = localStorage.getItem('sellerToken'); // ✅ FIX
+    const buyerToken = localStorage.getItem('buyerToken');   // ✅ FIX
+    const buyerInfo = JSON.parse(localStorage.getItem('buyerInfo'));
+
+    if (sellerToken) {
+      navigate('/seller/dashboard'); // Agar seller logged in hai
+    } else if (buyerToken && buyerInfo?.role === 'buyer') {
+      navigate('/buyer/dashboard'); // Agar buyer logged in hai
+    } else {
+      navigate('/buyer/login'); // Kisi ka login nahi hai toh default buyer login
     }
   };
 
   return (
     <div className="w-full">
-      {/* 1. TOP UTILITY BAR - Hidden on small mobile for space */}
+      {/* 1. TOP UTILITY BAR */}
       <div className="hidden sm:flex bg-white border-b border-slate-100 md:px-12 py-2 justify-between items-center text-[10px] md:text-[11px] font-semibold text-slate-500 tracking-wider">
         <div className="flex gap-4 md:gap-8">
           <span className="cursor-pointer hover:text-[#0B184A] uppercase">Currency: USD $</span>
@@ -30,9 +54,8 @@ const Header = () => {
         <div className="flex gap-4 md:gap-8 items-center">
           <span className="hidden md:inline cursor-pointer hover:text-[#0B184A] uppercase">Help Center</span>
           
-          {/* ✅ UPDATED: Account Click Logic */}
           <div 
-            onClick={handleAuthNavigation} 
+            onClick={handleAccountNavigation} 
             className="flex items-center gap-1.5 cursor-pointer hover:text-[#0B184A] group"
           >
             <User size={14} className="text-slate-600 group-hover:text-[#0B184A]" />
@@ -45,7 +68,6 @@ const Header = () => {
       {/* 2. MAIN HEADER */}
       <header className="sticky top-0 z-50 bg-white md:px-12 py-3 md:py-5 flex items-center justify-between gap-4 border-b border-slate-100 shadow-sm md:shadow-none">
         
-        {/* Mobile Menu Button */}
         <button 
           className="lg:hidden p-2 text-slate-600"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -53,7 +75,6 @@ const Header = () => {
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
 
-        {/* Logo Section */}
         <div className="flex items-center gap-2 md:gap-3 shrink-0 cursor-pointer" onClick={() => navigate('/')}>
           <div className="w-9 h-9 md:w-12 md:h-12 bg-[#0B184A] rounded-lg md:rounded-xl flex items-center justify-center text-white shadow-md">
             <Globe size={20} className="md:w-7 md:h-7" />
@@ -68,7 +89,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Search Bar - Hidden on mobile, visible on LG+ */}
         <div className="flex-1 max-w-4xl hidden lg:block">
           <div className="flex items-center bg-[#F1F5F9] rounded-2xl p-1 border border-transparent focus-within:border-slate-300 focus-within:bg-white transition-all">
             <div className="flex items-center px-4 gap-2 cursor-pointer border-r border-slate-300">
@@ -87,22 +107,22 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Right Actions - Desktop Only */}
         <div className="hidden lg:flex items-center gap-4">
-          <button className="bg-white border-2 border-[#0B184A] text-[#0B184A] px-7 py-3 rounded-xl text-xs font-bold hover:bg-slate-50 transition">
+          <button 
+            onClick={handleBuyerNavigation}
+            className="bg-white hover:text-white hover:border-white hover:bg-[#0B184A] border-2 border-[#0B184A] text-[#0B184A] px-7 py-3 rounded-xl text-xs font-bold transition"
+          >
             Buy Products
           </button>
           
-          {/* ✅ UPDATED: Sell Products Button Logic */}
           <button 
-            onClick={handleAuthNavigation} 
+            onClick={handleSellerNavigation} 
             className="bg-[#0B184A] text-white px-7 py-3 rounded-xl text-xs font-bold hover:bg-[white] border-2 border-[#0B184A] hover:text-[#0B184A] transition shadow-lg"
           >
             Sell Products
           </button>
         </div>
 
-        {/* Mobile Search Icon - Visible only on mobile */}
         <button className="lg:hidden p-2 text-[#0B184A]">
           <Search size={22} />
         </button>
@@ -119,26 +139,31 @@ const Header = () => {
           </div>
           
           <nav className="flex flex-col gap-4">
-            {/* ✅ UPDATED: Mobile Menu Button Logic */}
             <button 
               onClick={() => {
-                handleAuthNavigation();
-                setIsMenuOpen(false); // Menu close bhi kar diya
+                handleSellerNavigation();
+                setIsMenuOpen(false);
               }}
               className="w-full bg-[#0B184A] text-[#dcdcdc] p-4 rounded-xl font-bold flex items-center justify-center gap-2"
             >
               Sell Your Products
             </button>
 
-            <button className="w-full border-2 border-[#0B184A] text-[#dcdcdc] p-4 rounded-xl font-bold">
-              Post Buying Requirement
-            </button>
-            <div className="h-[1px] bg-slate-100 my-2" />
-            
-            {/* ✅ UPDATED: My Account Logic */}
             <button 
                 onClick={() => {
-                    handleAuthNavigation();
+                    handleBuyerNavigation();
+                    setIsMenuOpen(false);
+                }}
+                className="w-full border-2 border-[#0B184A] text-[#dcdcdc] p-4 rounded-xl font-bold"
+            >
+              Post Buying Requirement
+            </button>
+            
+            <div className="h-[1px] bg-slate-100 my-2" />
+            
+            <button 
+                onClick={() => {
+                    handleAccountNavigation();
                     setIsMenuOpen(false);
                 }} 
                 className="text-lg font-bold text-[#dcdcdc] py-2 border-b border-slate-50 text-left"

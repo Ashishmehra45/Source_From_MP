@@ -72,7 +72,7 @@ const ExporterRegistration = () => {
           confirmButtonText: 'Login Now' 
         }).then((result) => {
           if (result.isConfirmed) {
-            navigate('/login'); // Redirect to login
+            navigate('/seller/login'); // Redirect to login
           }
         });
       }
@@ -206,7 +206,7 @@ const ExporterRegistration = () => {
         <div className="text-center mt-8">
           <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
             Already have an Account?{' '}
-            <Link to="/login" className="text-blue-600 hover:text-blue-800 transition-colors ml-1 decoration-2 hover:underline underline-offset-4">
+            <Link to="/seller/login" className="text-blue-600 hover:text-blue-800 transition-colors ml-1 decoration-2 hover:underline underline-offset-4">
               Login Now
             </Link>
           </p>

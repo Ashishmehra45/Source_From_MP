@@ -13,7 +13,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Header from "../components/Header";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Package } from "lucide-react";
@@ -197,8 +197,10 @@ const LandingPage = () => {
                     MPIDC invites MP exporters to create their digital stores
                     today.
                   </p>
-                  <button className="w-full sm:w-fit bg-[#0B184A] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm shadow-lg">
-                    Register as an MP Exporter
+                  <button className="w-full sm:w-fit bg-[#0B184A] text-white border-2 border-[#0B184A] hover:bg-white hover:text-[#0B184A] px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm shadow-lg transition-all duration-300">
+                    <Link to="/seller/register" className="block w-full h-full">
+                      Register as an MP Exporter
+                    </Link>
                   </button>
                 </div>
                 <div className="absolute right-[-20px] bottom-[-20px] opacity-10 group-hover:opacity-20 transition-opacity">
@@ -215,8 +217,10 @@ const LandingPage = () => {
                     Widest range of export-ready products for international
                     buyers.
                   </p>
-                  <button className="w-full sm:w-fit bg-[#0B184A] text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm shadow-blue-200">
-                    Register as a Foreign Buyer
+                  <button className="w-full sm:w-fit bg-[#0B184A] text-white border-2 border-[#0B184A] hover:bg-white hover:text-[#0B184A] px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold text-xs md:text-sm shadow-lg shadow-blue-200/50 transition-all duration-300">
+                    <Link to="/buyer/register" className="block w-full h-full">
+                      Register as a Buyer
+                    </Link>
                   </button>
                 </div>
                 <div className="absolute right-[-20px] bottom-[-20px] opacity-5">

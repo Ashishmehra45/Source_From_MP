@@ -8,6 +8,9 @@ import SellerDashboard from "../pages/seller_Dashbord/SellerDashbord";
 
 // ✅ Step 1: ProtectedRoute ko import kar (path check kar lena)
 import ProtectedRoute from "../components/ProtectedRoute"; // Agar components folder me banaya hai
+import BuyerRegister from "../pages/buyer/BuyerRegister";
+import BuyerLogin from "../pages/buyer/buyerLogin"; // Buyer login page import karna
+import BuyerDashboard from "../pages/buyer/BuyerDashbord"; // Buyer dashboard page import karna
 
 function Approutes() {
   return (
@@ -15,17 +18,27 @@ function Approutes() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/gi" element={<GIGalleryFull />} />
       <Route path="/odop" element={<ODOP />} />
-      <Route path="/register" element={<ExporterRegistration />} />
-      <Route path="/login" element={<Login />} />
-      
-     
-      <Route 
-        path="/seller/dashboard" 
+      <Route path="/seller/register" element={<ExporterRegistration />} />
+      <Route path="/seller/login" element={<Login />} />
+
+      <Route path="/buyer/register" element={<BuyerRegister />} />
+      <Route path="/buyer/login" element={<BuyerLogin />} />
+
+      <Route
+        path="/buyer/dashboard"
+        element={
+          <ProtectedRoute>
+            <BuyerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/seller/dashboard"
         element={
           <ProtectedRoute>
             <SellerDashboard />
           </ProtectedRoute>
-        } 
+        }
       />
     </Routes>
   );

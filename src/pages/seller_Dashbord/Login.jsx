@@ -4,7 +4,7 @@ import { Mail, Lock, ChevronRight, MapPin, LogIn, Eye, EyeOff } from 'lucide-rea
 import Swal from 'sweetalert2';
 import Header from '../../components/Header';
 import { Link, useNavigate } from 'react-router-dom';
-import api from '../../api/axios'
+import api from '../../api/axios';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,10 +19,10 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-const handleLogin = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // 1. Loading Alert (Standard Center)
+    // 1. Loading Alert
     Swal.fire({
       title: 'Verifying...',
       text: 'Checking your credentials',
@@ -36,27 +36,26 @@ const handleLogin = async (e) => {
       const response = await api.post('/sellers/login', formData);
 
       if (response.status === 200) {
-        // ✅ Data Save Logic
-        localStorage.setItem('token', response.data.token);
+        
+        // 🚨 FIX: Token ka naam change kiya 'token' -> 'sellerToken'
+        localStorage.setItem('sellerToken', response.data.token); 
         localStorage.setItem('companyName', response.data.companyName);
         
-        // ✅ 2. Classic Success Alert (Centered)
+        // 2. Success Alert
         Swal.fire({
           icon: 'success',
           title: 'Welcome Back!',
           text: `Logged in as ${response.data.companyName}`,
           confirmButtonColor: '#10b981',
           confirmButtonText: 'Go to Dashboard',
-          timer: 2000, // Optional: apne aap bhi chala jayega
+          timer: 2000,
           timerProgressBar: true
         }).then((result) => {
-          // Alert close hone par ya button click par navigate karega
           navigate('/seller/dashboard');
         });
       }
     } catch (error) {
       console.error("Login Error:", error);
-      // ✅ 3. Error Alert
       Swal.fire({
         icon: 'error',
         title: 'Login Failed',
@@ -67,12 +66,12 @@ const handleLogin = async (e) => {
   };
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen  font-sans overflow-x-hidden">
+    <div className="bg-[#F8FAFC] min-h-screen font-sans overflow-x-hidden">
       <div className="sticky top-0 z-[100] bg-white border-b border-slate-100 shadow-sm">
         <Header />
       </div>
 
-      <div className="max-w-md mx-auto mb-20   md:pt-24 px-6">
+      <div className="max-w-md mx-auto mb-20 md:pt-24 px-6">
         
         {/* --- BRANDING HEADER --- */}
         <div className="text-center mb-10">
@@ -153,7 +152,7 @@ const handleLogin = async (e) => {
             <div className="text-center pt-4">
               <p className="text-slate-400 text-[11px] font-bold uppercase tracking-widest">
                 New to the portal? {' '}
-                <Link to="/register" className="text-blue-600 hover:underline">Register Now</Link>
+                <Link to="/seller/register" className="text-blue-600 hover:underline">Register Now</Link>
               </p>
             </div>
 
