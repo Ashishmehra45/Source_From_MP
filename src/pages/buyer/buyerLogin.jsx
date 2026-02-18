@@ -24,41 +24,34 @@ const handleSubmit = async (e) => {
         const { data } = await api.post("/buyers/login", formData); 
 
         if (data && data.token) {
-            // 🔐 1. Role ensure karo (ProtectedRoute ke liye zaroori hai)
+            // 🧹 STEP 1: Purana Seller data delete karo (Conflict hatane ke liye)
+            localStorage.removeItem('sellerToken'); 
+            localStorage.removeItem('sellerInfo');
+
+            // 🔐 STEP 2: Buyer data save karo
             const buyerData = { 
                 ...data, 
-                role: data.role || 'buyer' // Agar backend se nahi aaya, toh manual set karo
+                role: data.role || 'buyer' 
             };
 
-            // 🔐 2. Buyer Specific Storage
-            // 'buyerToken' check logic ProtectedRoute aur Axios mein sync honi chahiye
             localStorage.setItem('buyerToken', data.token);
-            
-            // 🔐 3. Pura user data save karo
             localStorage.setItem('buyerInfo', JSON.stringify(buyerData));
 
             Swal.fire({
                 title: 'Login Successful!',
-                text: `Welcome back, ${data.name || 'Buyer'}!`,
+                text: `Welcome back, ${data.name || 'buyer'}!`,
                 icon: 'success',
-                confirmButtonColor: '#001D4C',
                 timer: 1500,
                 showConfirmButton: false
             }).then(() => {
-                // ✅ Ensure spelling matches your Approutes.jsx (Dashboard vs Dashbord)
+                // ✅ Spelling check: 'Dashboard' vs 'Dashbord'
                 navigate('/buyer/dashboard');
             });
         }
     } catch (error) {
         console.error("Login Error:", error);
         const backendError = error.response?.data?.message || "Invalid Email or Password";
-        
-        Swal.fire({
-            title: 'Login Failed',
-            text: backendError,
-            icon: 'error',
-            confirmButtonColor: '#d33',
-        });
+        Swal.fire({ title: 'Login Failed', text: backendError, icon: 'error' });
     } finally {
         setLoading(false);
     }

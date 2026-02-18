@@ -10,7 +10,7 @@ import SellerDashboard from "../pages/seller_Dashbord/SellerDashbord";
 import ProtectedRoute from "../components/ProtectedRoute"; // Agar components folder me banaya hai
 import BuyerRegister from "../pages/buyer/BuyerRegister";
 import BuyerLogin from "../pages/buyer/buyerLogin"; // Buyer login page import karna
-import BuyerDashboard from "../pages/buyer/BuyerDashbord"; // Buyer dashboard page import karna
+import BuyerDashboard from "../pages/buyer/BuyerDashboard"; // Buyer dashboard page import karna
 
 function Approutes() {
   return (

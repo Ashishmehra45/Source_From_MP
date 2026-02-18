@@ -16,15 +16,17 @@ const api = axios.create({
 
 // 2. Token auto-add interceptor
 api.interceptors.request.use((config) => {
-    // Pehle dekho seller token hai? Agar nahi toh buyer token uthao
     const sellerToken = localStorage.getItem('sellerToken');
     const buyerToken = localStorage.getItem('buyerToken');
-    
-    const token = sellerToken || buyerToken;
 
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+    // 🕵️ Smart Token Selection:
+    // Agar URL me '/buyers' hai toh buyerToken bhejo, warna sellerToken
+    if (config.url.includes('/buyers') && buyerToken) {
+        config.headers.Authorization = `Bearer ${buyerToken}`;
+    } else if (sellerToken) {
+        config.headers.Authorization = `Bearer ${sellerToken}`;
     }
+
     return config;
 }, (error) => {
     return Promise.reject(error);
