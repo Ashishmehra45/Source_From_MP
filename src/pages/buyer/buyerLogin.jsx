@@ -24,12 +24,18 @@ const handleSubmit = async (e) => {
         const { data } = await api.post("/buyers/login", formData); 
 
         if (data && data.token) {
-            // 🔐 1. Buyer Specific Storage (Role-Based)
-            // Isse Seller ka token overwrite nahi hoga
-            localStorage.setItem('buyerToken', data.token); // ✅ 'token' ki jagah 'buyerToken'
+            // 🔐 1. Role ensure karo (ProtectedRoute ke liye zaroori hai)
+            const buyerData = { 
+                ...data, 
+                role: data.role || 'buyer' // Agar backend se nahi aaya, toh manual set karo
+            };
+
+            // 🔐 2. Buyer Specific Storage
+            // 'buyerToken' check logic ProtectedRoute aur Axios mein sync honi chahiye
+            localStorage.setItem('buyerToken', data.token);
             
-            // 🔐 2. Pura user data save karo (Profile ke liye)
-            localStorage.setItem('buyerInfo', JSON.stringify(data)); 
+            // 🔐 3. Pura user data save karo
+            localStorage.setItem('buyerInfo', JSON.stringify(buyerData));
 
             Swal.fire({
                 title: 'Login Successful!',
@@ -39,7 +45,8 @@ const handleSubmit = async (e) => {
                 timer: 1500,
                 showConfirmButton: false
             }).then(() => {
-                navigate('/buyer/dashboard'); 
+                // ✅ Ensure spelling matches your Approutes.jsx (Dashboard vs Dashbord)
+                navigate('/buyer/dashboard');
             });
         }
     } catch (error) {
