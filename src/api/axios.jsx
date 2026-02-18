@@ -16,7 +16,12 @@ const api = axios.create({
 
 // 2. Token auto-add interceptor
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
+    // Pehle dekho seller token hai? Agar nahi toh buyer token uthao
+    const sellerToken = localStorage.getItem('sellerToken');
+    const buyerToken = localStorage.getItem('buyerToken');
+    
+    const token = sellerToken || buyerToken;
+
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
