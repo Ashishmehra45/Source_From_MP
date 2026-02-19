@@ -246,7 +246,7 @@ const LandingPage = () => {
               </p>
             </div>
             <button className="w-full md:w-fit justify-center border-2 text-white border-[#0B184A] bg-[#0B184A] px-2 py-2 rounded-md font-bold flex items-center hover:bg-white hover:text-black transition">
-              View All <ChevronRight size={18} />
+            <Link to="/products">View All</Link> <ChevronRight size={18} />
             </button>
           </div>
 
