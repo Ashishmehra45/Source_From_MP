@@ -246,7 +246,7 @@ const LandingPage = () => {
               </p>
             </div>
             <button className="w-full md:w-fit justify-center border-2 text-white border-[#0B184A] bg-[#0B184A] px-2 py-2 rounded-md font-bold flex items-center hover:bg-white hover:text-black transition">
-            <Link to="/products">View All</Link> <ChevronRight size={18} />
+            View All <ChevronRight size={18} />
             </button>
           </div>
 
@@ -289,7 +289,7 @@ const LandingPage = () => {
                 </h3>
               </div>
               <button className="group flex items-center gap-2 font-bold text-[#0B184A] hover:text-blue-600 transition-colors border-b-2 border-transparent hover:border-blue-600 pb-1">
-                View All Marketplace{" "}
+               <Link to="/products"> View All Marketplace</Link>
                 <ArrowRight
                   size={20}
                   className="group-hover:translate-x-1 transition-transform"
