@@ -15,6 +15,7 @@ import SavedItems from "../pages/buyer/SaveProduct"; // Saved items page import 
 import Products from "../pages/Product";
 import InquiryModal from "../pages/InquiryModal";
 import BuyerInquiries from "../pages/buyer/BuyerInquiries"; // Buyer inquiries page import karna
+import Admin from "../pages/Admin/Admin"; // Admin page import karna
 
 function Approutes() {
   return (
@@ -30,6 +31,8 @@ function Approutes() {
       <Route path="/products" element={<Products />} />
       <Route path="/buyer/inquiry" element={<InquiryModal />} />
       <Route path="/buyer/inquiries" element={<BuyerInquiries />} />
+      <Route path="/admin/dashboard" element={<Admin />} />
+      
 
       {/* ✅ BUYER DASHBOARD - Role added */}
       <Route

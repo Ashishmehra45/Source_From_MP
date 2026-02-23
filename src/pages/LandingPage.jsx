@@ -328,7 +328,7 @@ useEffect(() => {
             <div>
               <h3 className="text-3xl md:text-4xl font-black text-blue-900 mb-2">
                 Our{" "}
-                <span className="bg-[#0B184A] text-white px-3 rounded-md">
+                <span className="bg-[#0B184A] text-white px-2 py-1 rounded-md">
                   Category
                 </span>
               </h3>
@@ -336,9 +336,9 @@ useEffect(() => {
                 Buy and Sell Everything from MP's Top Trade Sectors
               </p>
             </div>
-            <button className="w-full md:w-fit justify-center border-2 text-white border-[#0B184A] bg-[#0B184A] px-2 py-2 rounded-md font-bold flex items-center hover:bg-white hover:text-black transition">
+            {/* <button className="w-full md:w-fit justify-center border-2 text-white border-[#0B184A] bg-[#0B184A] px-2 py-2 rounded-md font-bold flex items-center hover:bg-white hover:text-black transition">
               View All <ChevronRight size={18} />
-            </button>
+            </button> */}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 md:gap-6">
