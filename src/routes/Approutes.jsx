@@ -13,6 +13,8 @@ import BuyerLogin from "../pages/buyer/buyerLogin"; // Buyer login page import k
 import BuyerDashboard from "../pages/buyer/BuyerDashboard"; // Buyer dashboard page import karna
 import SavedItems from "../pages/buyer/SaveProduct"; // Saved items page import karna
 import Products from "../pages/Product";
+import InquiryModal from "../pages/InquiryModal";
+import BuyerInquiries from "../pages/buyer/BuyerInquiries"; // Buyer inquiries page import karna
 
 function Approutes() {
   return (
@@ -26,6 +28,8 @@ function Approutes() {
       <Route path="/buyer/register" element={<BuyerRegister />} />
       <Route path="/buyer/login" element={<BuyerLogin />} />
       <Route path="/products" element={<Products />} />
+      <Route path="/buyer/inquiry" element={<InquiryModal />} />
+      <Route path="/buyer/inquiries" element={<BuyerInquiries />} />
 
       {/* ✅ BUYER DASHBOARD - Role added */}
       <Route

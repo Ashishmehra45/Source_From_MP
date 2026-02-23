@@ -11,14 +11,18 @@ import {
   Globe,
   User,
   ArrowRight,
+  Package,
+  X,
 } from "lucide-react";
 import Header from "../components/Header";
 import { useNavigate, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Package } from "lucide-react";
+
 import Footer from "../components/Footer";
 import api from "../api/axios";
+import Swal from "sweetalert2";
+
 
 // Custom SVG Icons (Standard for professional B2B sites)
 const IconGlobe = () => (
@@ -60,6 +64,8 @@ const LandingPage = () => {
   // ✅ YE LINES ADD KARNI HAIN (Jo missing hain)
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(null); // Pop-up ka data
+  const [isModalOpen, setIsModalOpen] = useState(false); // Modal visibility
 
   // ✅ YE EFFECT BHI ADD KARNA HAI (Data lane ke liye)
   useEffect(() => {
@@ -116,6 +122,91 @@ const LandingPage = () => {
       navigate(`/category/${slug}`);
     }
   };
+  const [formData, setFormData] = useState({
+    email: "",
+    quantity: "",
+    whatsapp: "",
+    message: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Inputs handle karne ke liye simple function
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // 1. LocalStorage se Buyer ka data nikaalein
+  const buyerData = JSON.parse(localStorage.getItem('buyerInfo'));
+
+  // 2. Check karein ki buyer logged in hai ya nahi
+  if (!buyerData || !buyerData.token) {
+  // 📍 Login se pehle product ID save karo
+  localStorage.setItem('pendingInquiryProductId', selectedProduct._id);
+
+  Swal.fire({
+    title: 'Login Required',
+    text: 'Please login as a Buyer to send an inquiry.',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Login Now'
+  }).then((result) => {
+    if (result.isConfirmed) navigate('/buyer/login');
+  });
+  return;
+}
+
+  setIsSubmitting(true);
+
+  try {
+    // 3. Payload taiyar karein (Model import karne ki zarurat nahi!)
+    const payload = {
+      productId: selectedProduct._id,
+      sellerId: selectedProduct.seller, // Product ke sath seller ki ID honi chahiye
+      buyerId: buyerData._id,           // Login ke waqt jo ID mili thi
+      productName: selectedProduct.name,
+      productImage: selectedProduct.image,
+      hscode: selectedProduct.hscode,
+      email: formData.email,
+      quantity: formData.quantity,
+      whatsapp: formData.whatsapp,
+      message: formData.message
+    };
+
+    // 4. Aapka axios instance use karein
+    const { data } = await api.post("/inquiries/send-inquiry", payload);
+
+    if (data.success) {
+      Swal.fire('Success!', 'Your inquiry has been sent to the seller.', 'success');
+      setIsModalOpen(false);
+      setFormData({ email: '', quantity: '', whatsapp: '', message: '' });
+    }
+  } catch (error) {
+    console.error("Inquiry Error:", error);
+    const msg = error.response?.data?.message || "Failed to send inquiry";
+    Swal.fire('Error', msg, 'error');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+useEffect(() => {
+  const pendingProductId = localStorage.getItem('pendingInquiryProductId');
+  const buyerData = localStorage.getItem('buyerInfo');
+
+  // Agar product ID hai aur banda ab login ho chuka hai
+  if (pendingProductId && buyerData && products.length > 0) {
+    const product = products.find(p => p._id === pendingProductId);
+    if (product) {
+      setSelectedProduct(product);
+      setIsModalOpen(true);
+      // Kaam ho gaya, ab clean up kar do taaki baar-baar na khule
+      localStorage.removeItem('pendingInquiryProductId');
+    }
+  }
+}, [products]); // Products load hone ka wait karega
 
   return (
     <div className="min-h-screen w-full  font-sans text-slate-900  ">
@@ -190,7 +281,7 @@ const LandingPage = () => {
               <div className="bg-[rgb(232,235,249)] p-6 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-blue-100 flex flex-col justify-between hover:shadow-xl transition relative overflow-hidden group">
                 <div className="relative z-10">
                   <h3 className="text-2xl md:text-3xl font-black text-[#0B184A] mb-3 md:mb-4">
-                    Sell on Sourcr From MP <br className="hidden md:block" />{" "}
+                    Sell on Source From MP <br className="hidden md:block" />{" "}
                     Business Portal
                   </h3>
                   <p className="text-slate-600 text-xs md:text-sm font-bold mb-6 md:mb-8 max-w-[250px]">
@@ -246,7 +337,7 @@ const LandingPage = () => {
               </p>
             </div>
             <button className="w-full md:w-fit justify-center border-2 text-white border-[#0B184A] bg-[#0B184A] px-2 py-2 rounded-md font-bold flex items-center hover:bg-white hover:text-black transition">
-            View All <ChevronRight size={18} />
+              View All <ChevronRight size={18} />
             </button>
           </div>
 
@@ -273,6 +364,146 @@ const LandingPage = () => {
           </div>
         </section>
 
+        {/* --- Simple & Clean Inquiry Modal --- */}
+        {isModalOpen && selectedProduct && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+            <div className="bg-white w-full max-w-4xl rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-300">
+              {/* 1. LEFT PANEL: PRODUCT PREVIEW */}
+              <div className="md:w-[35%] bg-slate-50 p-8 border-r border-slate-100 flex flex-col">
+                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-6 block">
+                  Inquiry For
+                </span>
+
+                <div className="aspect-square rounded-2xl overflow-hidden bg-white border border-slate-200 mb-6 shadow-sm">
+                  <img
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <h4 className="text-xl font-bold text-[#0B184A] mb-2 leading-tight">
+                  {selectedProduct.name}
+                </h4>
+
+                <p className="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-4">
+                  {selectedProduct.description ||
+                    "Standard export quality product."}
+                </p>
+
+                <div className="mt-auto bg-white border border-slate-200 rounded-xl p-4">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
+                    HS Code
+                  </p>
+                  <p className="text-sm font-mono font-bold text-[#0B184A]">
+                    {selectedProduct.hscode || "Not Specified"}
+                  </p>
+                </div>
+              </div>
+
+              {/* 2. RIGHT PANEL: ENQUIRY FORM */}
+              <div className="flex-1 p-8 md:p-10 bg-white relative">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="absolute top-6 right-6 p-2 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <X size={24} />
+                </button>
+
+                <header className="mb-8">
+                  <h2 className="text-2xl font-bold text-[#0B184A]">
+                    Send Inquiry
+                  </h2>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Please fill the details for direct manufacturer response.
+                  </p>
+                </header>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Email Field (Required) */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-600 ml-1">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="example@business.com"
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Quantity Needed Field (Required) */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-600 ml-1">
+                        Quantity Needed <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        name="quantity"
+                        type="text"
+                        value={formData.quantity}
+                        onChange={handleChange}
+                        placeholder="e.g. 1000 Units / 500 Kg"
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                        required
+                      />
+                    </div>
+
+                    {/* WhatsApp Field (Optional) */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-slate-600 ml-1">
+                        WhatsApp (Optional)
+                      </label>
+                      <input
+                        name="whatsapp"
+                        type="tel"
+                        value={formData.whatsapp}
+                        onChange={handleChange}
+                        placeholder="+91..."
+                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Detailed Message Field (Required) */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-600 ml-1">
+                      Detailed Message <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      rows="5"
+                      placeholder="Describe your specific requirements, customization, or delivery timelines..."
+                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium resize-none"
+                      required
+                    ></textarea>
+                  </div>
+
+                  {/* Action Button */}
+                  <button
+                    type="submit"
+                    disabled={isSubmitting} // Disable button while submitting
+                    className={`w-full bg-[#0B184A] text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 uppercase tracking-wider text-xs ${
+                      isSubmitting
+                        ? "opacity-70 cursor-not-allowed"
+                        : "hover:bg-blue-700 active:scale-[0.98]"
+                    }`}
+                  >
+                    {isSubmitting ? "Sending..." : "Send Inquiry Now"}
+                    {!isSubmitting && <ArrowRight size={18} />}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
         <section className="py-20 px-4 md:px-12 bg-slate-50 border-t border-slate-200">
           <div className="max-w-[1800px] mx-auto">
             {/* Section Header */}
@@ -289,7 +520,7 @@ const LandingPage = () => {
                 </h3>
               </div>
               <button className="group flex items-center gap-2 font-bold text-[#0B184A] hover:text-blue-600 transition-colors border-b-2 border-transparent hover:border-blue-600 pb-1">
-               <Link to="/products"> View All Marketplace</Link>
+                <Link to="/products"> View All Marketplace</Link>
                 <ArrowRight
                   size={20}
                   className="group-hover:translate-x-1 transition-transform"
@@ -343,7 +574,7 @@ const LandingPage = () => {
                       <h4 className="text-xl font-black text-[#0B184A] leading-tight mb-2 line-clamp-1 group-hover:text-blue-700 transition-colors">
                         {product.name}
                       </h4>
-                      <p className="text-slate-500 text-xs font-medium line-clamp-2 mb-4 h-8">
+                      <p className="text-slate-500 text-xs font-medium  mb-auto">
                         {product.description ||
                           "Premium quality export product available for bulk orders."}
                       </p>
@@ -358,7 +589,13 @@ const LandingPage = () => {
                             {product.hscode || "N/A"}
                           </span>
                         </div>
-                        <button className="bg-[#0B184A] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/20 active:scale-95">
+                        <button
+                          onClick={() => {
+                            setSelectedProduct(product); // Product ka saara data set karega
+                            setIsModalOpen(true); // Modal khol dega
+                          }}
+                          className="bg-[#0B184A] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/20 active:scale-95"
+                        >
                           Inquire
                         </button>
                       </div>

@@ -24,7 +24,7 @@ const handleSubmit = async (e) => {
         const { data } = await api.post("/buyers/login", formData); 
 
         if (data && data.token) {
-            // 🧹 STEP 1: Purana Seller data delete karo (Conflict hatane ke liye)
+            // 🧹 STEP 1: Purana Seller data delete karo
             localStorage.removeItem('sellerToken'); 
             localStorage.removeItem('sellerInfo');
 
@@ -44,8 +44,16 @@ const handleSubmit = async (e) => {
                 timer: 1500,
                 showConfirmButton: false
             }).then(() => {
-                // ✅ Spelling check: 'Dashboard' vs 'Dashbord'
-                navigate('/buyer/dashboard');
+                // ⭐ UPDATE: Check if there is a pending product inquiry
+                const pendingInquiry = localStorage.getItem('pendingInquiryProductId');
+
+                if (pendingInquiry) {
+                    // Agar koi product pending hai, toh wapas Landing page (Home) par bhejo
+                    navigate('/'); 
+                } else {
+                    // Agar koi pending product nahi hai, toh normal dashboard par bhejo
+                    navigate('/buyer/dashboard');
+                }
             });
         }
     } catch (error) {

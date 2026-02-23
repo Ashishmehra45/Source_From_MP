@@ -17,21 +17,24 @@ import {
   X,
   Edit,
   Trash2,
+  Mail, // ✅ Added for inquiries
+  Phone, // ✅ Added for inquiries
+  MessageSquare, // ✅ Added for inquiries
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import Header from "../../components/Header";
 import axios from "axios";
 import Footer from "../../components/Footer";
-import api from "../../api/axios"; 
+import api from "../../api/axios";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [inquiries, setInquiries] = useState([]); // 🔥 Added Inquiries state
 
-  // ✅ FIX: Consistent key name for Seller
   const sellerName = localStorage.getItem("companyName") || "Valued Exporter";
 
   const navItems = [
@@ -41,7 +44,6 @@ const Dashboard = () => {
     { id: "settings", icon: Settings, label: "Account" },
   ];
 
-  // ✅ UPDATED LOGOUT: Sirf Seller ka data clear karega
   const handleLogout = () => {
     Swal.fire({
       title: "Are you sure?",
@@ -54,10 +56,9 @@ const Dashboard = () => {
       cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
-        // Sirf Seller ki keys delete kar rahe hain
         localStorage.removeItem("sellerToken");
-        localStorage.removeItem("companyName"); 
-        
+        localStorage.removeItem("companyName");
+
         Swal.fire({
           title: "Logged Out!",
           text: "See you soon.",
@@ -71,49 +72,58 @@ const Dashboard = () => {
       }
     });
   };
-  
 
   const fetchProducts = async () => {
     try {
-      // ✅ FIX: Use 'sellerToken'
       const token = localStorage.getItem("sellerToken");
-      
+
       if (!token) {
         navigate("/seller/login", { replace: true });
         return;
       }
 
+      // Fetch Products
       const { data } = await api.get("/sellers/my-products", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
       setProducts(data.products);
-      setLoading(false);
 
+      // 🔥 Fetch Inquiries (Add this API call)
+      try {
+        const inqRes = await api.get("/sellers/buyer-enquiries", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInquiries(inqRes.data);
+      } catch (inqError) {
+        console.error("Error fetching inquiries", inqError);
+        // Don't fail the whole dashboard if inquiries fail
+      }
+
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching products", error);
       setLoading(false);
 
-      // ✅ FIX: Unauthorized ya Forbidden error par clean redirect
-      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        localStorage.removeItem("sellerToken"); 
+      if (
+        error.response &&
+        (error.response.status === 401 || error.response.status === 403)
+      ) {
+        localStorage.removeItem("sellerToken");
         localStorage.removeItem("companyName");
-        navigate("/seller/login", { replace: true }); 
+        navigate("/seller/login", { replace: true });
       }
     }
   };
 
   useEffect(() => {
-    // ✅ FIX: Initial Security Check
     const token = localStorage.getItem("sellerToken");
     if (!token) {
-        navigate("/seller/login", { replace: true });
+      navigate("/seller/login", { replace: true });
     } else {
-        fetchProducts();
+      fetchProducts();
     }
   }, []);
 
-  // --- DELETE LOGIC ---
   const handleDeleteProduct = async (productId) => {
     Swal.fire({
       title: "Are you sure?",
@@ -126,12 +136,12 @@ const Dashboard = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const token = localStorage.getItem("sellerToken"); // ✅ Use sellerToken
+          const token = localStorage.getItem("sellerToken");
           await api.delete(`/sellers/delete-product/${productId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
 
-          fetchProducts(); 
+          fetchProducts();
 
           Swal.fire("Deleted!", "Your product has been deleted.", "success");
         } catch (error) {
@@ -141,7 +151,6 @@ const Dashboard = () => {
     });
   };
 
-  // --- EDIT LOGIC ---
   const handleEditProduct = (product) => {
     Swal.fire({
       title:
@@ -209,7 +218,7 @@ const Dashboard = () => {
         if (image) formData.append("image", image);
 
         try {
-          const token = localStorage.getItem("sellerToken"); // ✅ Use sellerToken
+          const token = localStorage.getItem("sellerToken");
           await api.put(`/sellers/update-product/${product._id}`, formData, {
             headers: {
               "Content-Type": "multipart/form-data",
@@ -327,7 +336,7 @@ const Dashboard = () => {
             },
           });
 
-          const token = localStorage.getItem("sellerToken"); // ✅ FIX: Use sellerToken
+          const token = localStorage.getItem("sellerToken");
 
           if (!token) {
             throw new Error("You are not logged in!");
@@ -359,6 +368,56 @@ const Dashboard = () => {
               "Something went wrong!",
             confirmButtonColor: "#ef4444",
           });
+        }
+      }
+    });
+  };
+
+  const handleInquiryAction = async (inqId, action) => {
+    Swal.fire({
+      title: action === "Approved" ? "Approve Inquiry?" : "Close Inquiry?",
+      text:
+        action === "Approved"
+          ? "This will show as 'Approved' to the buyer."
+          : "This will close the inquiry.",
+      icon: action === "Approved" ? "success" : "warning",
+      showCancelButton: true,
+      confirmButtonColor: action === "Approved" ? "#10b981" : "#f43f5e", // Green for Approve, Red for Close
+      cancelButtonColor: "#94a3b8",
+      confirmButtonText: `Yes, ${action} it!`,
+      customClass: { popup: "rounded-[1.5rem]" },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const token = localStorage.getItem("sellerToken");
+
+          // Backend ko batao ki status Pending se Approved/Closed kardo
+          await api.put(
+            `/sellers/update-status/${inqId}`,
+            { status: action },
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+
+          // Screen par turant Pending ki jagah Approved dikhane ke liye:
+          setInquiries(
+            inquiries.map((inq) =>
+              inq._id === inqId ? { ...inq, status: action } : inq,
+            ),
+          );
+
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            icon: "success",
+            title: `Inquiry is now ${action}`,
+            showConfirmButton: false,
+            timer: 1500,
+          });
+        } catch (err) {
+          console.error(err);
+          Swal.fire("Error", "Kuch gadbad ho gayi bhai, try again!", "error");
         }
       }
     });
@@ -427,202 +486,381 @@ const Dashboard = () => {
                 </p>
               </div>
 
-              <button
-                onClick={addProductAlert}
-                className="w-full sm:w-auto bg-[#10b981] text-white px-8 py-5 rounded-3xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-2xl shadow-emerald-200/50 hover:bg-emerald-700 transition-all active:scale-95 group"
-              >
-                <PackagePlus
-                  size={20}
-                  className="group-hover:rotate-12 transition-transform"
-                />{" "}
-                List New Product
-              </button>
-            </div>
-
-            {/* Stats Section */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-              {[
-                {
-                  label: "Products",
-                  value: products.length || "0",
-                  icon: Package,
-                  color: "text-blue-600",
-                  bg: "bg-blue-50",
-                },
-                {
-                  label: "Inquiries",
-                  value: "48",
-                  icon: TrendingUp,
-                  color: "text-emerald-600",
-                  bg: "bg-emerald-50",
-                },
-                {
-                  label: "Reach",
-                  value: "14+",
-                  icon: MapPin,
-                  color: "text-amber-600",
-                  bg: "bg-amber-50",
-                },
-              ].map((stat, i) => (
-                <div
-                  key={i}
-                  className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-blue-900/5 flex items-center gap-6 group hover:shadow-2xl transition-all"
-                >
-                  <div
-                    className={`w-16 h-16 md:w-20 md:h-20 ${stat.bg} ${stat.color} rounded-[1.5rem] flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}
-                  >
-                    <stat.icon size={32} />
-                  </div>
-                  <div>
-                    <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.25em] mb-1">
-                      {stat.label}
-                    </p>
-                    <p className="text-3xl md:text-4xl font-black text-[#0B184A] tracking-tighter">
-                      {stat.value}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* --- PROFESSIONAL CATALOG GRID --- */}
-            <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10 overflow-hidden mb-12">
-              <div className="flex items-center justify-between mb-8 px-2">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
-                    <Package size={24} strokeWidth={2.5} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-black text-[#0B184A] uppercase tracking-tight leading-none">
-                      Active Listings
-                    </h3>
-                    <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
-                      Manage your catalog
-                    </p>
-                  </div>
-                </div>
-                <span className="text-slate-500 font-bold text-[11px] uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
-                  Total: {!loading ? products.length : 0}
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-                {!loading &&
-                  products.map((product) => (
-                    <div
-                      key={product._id}
-                      className="group flex flex-col h-full bg-white rounded-[2rem] border border-slate-100 hover:border-blue-100 shadow-sm hover:shadow-[0_20px_40px_rgba(8,_112,_184,_0.08)] transition-all duration-300 hover:-translate-y-1 overflow-hidden"
-                    >
-                      <div className="relative w-full aspect-[16/10] overflow-hidden bg-slate-100 border-b border-slate-50">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                            <Package size={40} className="text-slate-300" />
-                          </div>
-                        )}
-
-                        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm border border-slate-100 px-3 py-1.5 rounded-full flex items-center gap-1.5 z-10">
-                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                          <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">
-                            Live
-                          </span>
-                        </div>
-
-                        <div className="absolute bottom-4 left-4">
-                          <span className="px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur text-[#0B184A] font-bold text-[10px] uppercase tracking-wider shadow-sm border border-slate-100">
-                            {product.category}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex-1 p-6 flex flex-col">
-                        <div className="mb-auto">
-                          <h4 className="font-black text-[#0B184A] text-lg leading-snug mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
-                            {product.name}
-                          </h4>
-
-                          <p className="text-slate-500 text-xs font-medium leading-relaxed line-clamp-2 h-[2.5em] mb-4">
-                            {product.description ||
-                              "No description provided for this item."}
-                          </p>
-
-                          <div className="inline-flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                              HS Code
-                            </span>
-                            <span className="text-xs font-mono font-bold text-slate-600">
-                              {product.hscode || "---"}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 pt-5 border-t border-slate-50 flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-slate-400">
-                            <CheckCircle
-                              size={14}
-                              className="text-emerald-500"
-                            />
-                            <span className="text-[11px] font-bold uppercase tracking-wider">
-                              Active Listing
-                            </span>
-                          </div>
-
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleEditProduct(product)}
-                              className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
-                            >
-                              <Edit size={15} strokeWidth={2.5} />
-                            </button>
-
-                            <button
-                              onClick={() => handleDeleteProduct(product._id)}
-                              className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all shadow-sm"
-                            >
-                              <Trash2 size={15} strokeWidth={2.5} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
+              {activeTab !== "orders" && (
                 <button
                   onClick={addProductAlert}
-                  className="group flex flex-col h-full min-h-[420px] bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 relative overflow-hidden text-left"
+                  className="w-full sm:w-auto bg-[#10b981] text-white px-8 py-5 rounded-3xl font-black text-[11px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 shadow-2xl shadow-emerald-200/50 hover:bg-emerald-700 transition-all active:scale-95 group"
                 >
-                  <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6">
-                    <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-100 text-slate-300 group-hover:text-white group-hover:bg-blue-600 group-hover:scale-110 group-hover:rotate-90 transition-all duration-500">
-                      <Plus size={32} strokeWidth={3} />
-                    </div>
-                    <div className="text-center">
-                      <h5 className="font-black text-sm text-[#0B184A] uppercase tracking-[0.2em] mb-2">
-                        Add Product
-                      </h5>
-                      <p className="text-xs text-slate-400 font-medium px-8">
-                        Create a new listing for your global buyers
-                      </p>
-                    </div>
-                  </div>
+                  <PackagePlus
+                    size={20}
+                    className="group-hover:rotate-12 transition-transform"
+                  />{" "}
+                  List New Product
                 </button>
-              </div>
-
-              {!loading && products.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20 opacity-50">
-                  <Package size={48} className="text-slate-300 mb-4" />
-                  <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
-                    Your catalog is empty
-                  </p>
-                </div>
               )}
             </div>
 
-            <p className="text-center text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] opacity-50 pb-8">
+            {/* --- TAB CONTENT SWITCHING --- */}
+            {activeTab === "dashboard" || activeTab === "products" ? (
+              <>
+                {/* Stats Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+                  {[
+                    {
+                      label: "Products",
+                      value: products.length || "0",
+                      icon: Package,
+                      color: "text-blue-600",
+                      bg: "bg-blue-50",
+                    },
+                    {
+                      label: "Inquiries",
+                      value: inquiries.length || "0", // 🔥 Yahan "48" hata kar inquiries.length lagaya hai
+                      icon: TrendingUp,
+                      color: "text-emerald-600",
+                      bg: "bg-emerald-50",
+                    },
+                    {
+                      label: "Reach",
+                      value: "14+",
+                      icon: MapPin,
+                      color: "text-amber-600",
+                      bg: "bg-amber-50",
+                    },
+                  ].map((stat, i) => (
+                    <div
+                      key={i}
+                      className={`bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-blue-900/5 flex items-center gap-6 group hover:shadow-2xl transition-all ${
+                        stat.label === "Inquiries" ? "cursor-pointer" : "" // Optional: Clickable banane ke liye
+                      }`}
+                      onClick={() => {
+                        if (stat.label === "Inquiries") setActiveTab("orders"); // Optional: Card pe click karke seedha tab kholna
+                      }}
+                    >
+                      <div
+                        className={`w-16 h-16 md:w-20 md:h-20 ${stat.bg} ${stat.color} rounded-[1.5rem] flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform`}
+                      >
+                        <stat.icon size={32} />
+                      </div>
+                      <div>
+                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.25em] mb-1">
+                          {stat.label}
+                        </p>
+                        <p className="text-3xl md:text-4xl font-black text-[#0B184A] tracking-tighter">
+                          {stat.value}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* --- PROFESSIONAL CATALOG GRID --- */}
+                <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10 overflow-hidden mb-12">
+                  <div className="flex items-center justify-between mb-8 px-2">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600">
+                        <Package size={24} strokeWidth={2.5} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-[#0B184A] uppercase tracking-tight leading-none">
+                          Active Listings
+                        </h3>
+                        <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mt-1">
+                          Manage your catalog
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-slate-500 font-bold text-[11px] uppercase tracking-widest bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+                      Total: {!loading ? products.length : 0}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                    {!loading &&
+                      products.map((product) => (
+                        <div
+                          key={product._id}
+                          className="group flex flex-col h-full bg-white rounded-[2rem] border border-slate-100 hover:border-blue-100 shadow-sm hover:shadow-[0_20px_40px_rgba(8,_112,_184,_0.08)] transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        >
+                          {/* Image Area */}
+                          <div className="relative w-full aspect-[16/11] overflow-hidden bg-slate-100 border-b border-slate-50">
+                            {product.image ? (
+                              <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                                <Package size={40} className="text-slate-300" />
+                              </div>
+                            )}
+
+                            <div className="absolute top-4 right-4 bg-white/95 backdrop-blur shadow-sm border border-slate-100 px-3 py-1.5 rounded-full flex items-center gap-1.5 z-10">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                              <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">
+                                Live
+                              </span>
+                            </div>
+
+                            <div className="absolute bottom-4 left-4">
+                              <span className="px-3 py-1.5 rounded-lg bg-white/95 backdrop-blur text-[#0B184A] font-bold text-[10px] uppercase tracking-wider shadow-sm border border-slate-100">
+                                {product.category}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex-1 p-6 flex flex-col">
+                            {/* Is section ko mb-auto rakha hai taaki niche ka HS Code area hamesha bottom par hi rahe */}
+                            <div className="mb-auto">
+                              <h4 className="font-black text-[#0B184A] text-lg leading-snug mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                                {product.name}
+                              </h4>
+
+                              {/* 🔥 Dynamic Description (Ab text nahi katega) */}
+                              <p className="text-slate-500 text-xs font-medium leading-relaxed mb-4">
+                                {product.description ||
+                                  "No description provided for this item."}
+                              </p>
+
+                              <div className="inline-flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
+                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                                  HS Code
+                                </span>
+                                <span className="text-xs font-mono font-bold text-slate-600">
+                                  {product.hscode || "---"}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Footer Area: HS Code & Buttons */}
+                            <div className="  border-t border-slate-50 flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-slate-400">
+                                <CheckCircle
+                                  size={14}
+                                  className="text-emerald-500"
+                                />
+                                <span className="text-[11px] font-bold uppercase tracking-wider">
+                                  Active Listing
+                                </span>
+                              </div>
+
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleEditProduct(product)}
+                                  className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-all shadow-sm"
+                                >
+                                  <Edit size={15} strokeWidth={2.5} />
+                                </button>
+
+                                <button
+                                  onClick={() =>
+                                    handleDeleteProduct(product._id)
+                                  }
+                                  className="h-9 w-9 rounded-xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all shadow-sm"
+                                >
+                                  <Trash2 size={15} strokeWidth={2.5} />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                    <button
+                      onClick={addProductAlert}
+                      className="group flex flex-col h-full min-h-[420px] bg-slate-50/50 rounded-[2rem] border-2 border-dashed border-slate-200 hover:border-blue-400 hover:bg-blue-50/30 transition-all duration-300 relative overflow-hidden text-left"
+                    >
+                      <div className="flex-1 flex flex-col items-center justify-center gap-6 p-6">
+                        <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg shadow-slate-100 text-slate-300 group-hover:text-white group-hover:bg-blue-600 group-hover:scale-110 group-hover:rotate-90 transition-all duration-500">
+                          <Plus size={32} strokeWidth={3} />
+                        </div>
+                        <div className="text-center">
+                          <h5 className="font-black text-sm text-[#0B184A] uppercase tracking-[0.2em] mb-2">
+                            Add Product
+                          </h5>
+                          <p className="text-xs text-slate-400 font-medium px-8">
+                            Create a new listing for your global buyers
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+
+                  {!loading && products.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                      <Package size={48} className="text-slate-300 mb-4" />
+                      <p className="text-slate-400 text-sm font-bold uppercase tracking-widest">
+                        Your catalog is empty
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : activeTab === "orders" ? (
+              // 🔥 INQUIRIES TAB LAYOUT
+              <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-10 overflow-hidden mb-12">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <h3 className="text-2xl font-black text-[#0B184A] tracking-tight">
+                      Buyer Inquiries
+                    </h3>
+                    <p className="text-slate-400 text-sm font-medium mt-1">
+                      Manage and respond to your global leads
+                    </p>
+                  </div>
+                  <span className="bg-blue-50 text-blue-600 font-bold px-4 py-2 rounded-xl text-xs uppercase tracking-widest border border-blue-100">
+                    Total: {inquiries.length}
+                  </span>
+                </div>
+
+                <div className="space-y-6">
+                  {loading ? (
+                    <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest">
+                      Loading...
+                    </div>
+                  ) : inquiries.length > 0 ? (
+                    inquiries.map((inq) => (
+                      <div
+                        key={inq._id}
+                        className="border border-slate-100 bg-slate-50/50 rounded-[2rem] p-6 hover:shadow-lg transition-all"
+                      >
+                        <div className="flex flex-col md:flex-row gap-6">
+                          {/* Product Details side */}
+                          <div className="md:w-1/3 flex gap-4 border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 md:pr-6">
+                            <div className="w-20 h-20 bg-white rounded-2xl overflow-hidden shrink-0 border border-slate-100">
+                              <img
+                                src={
+                                  inq.productImage ||
+                                  "https://via.placeholder.com/150"
+                                }
+                                alt="product"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">
+                                Inquiry For
+                              </p>
+                              <h4 className="text-[#0B184A] font-bold text-lg leading-tight line-clamp-2">
+                                {inq.productName}
+                              </h4>
+                              <p className="text-xs text-slate-500 font-medium mt-1">
+                                Qty Req:{" "}
+                                <span className="text-[#0B184A] font-black">
+                                  {inq.quantity}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Buyer Details Side */}
+                          <div className="flex-1 flex flex-col justify-between">
+                            <div className="flex justify-between items-start mb-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
+                                  <Mail size={16} className="text-slate-400" />{" "}
+                                  {inq.email}
+                                </div>
+                                {inq.whatsapp && (
+                                  <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
+                                    <Phone
+                                      size={16}
+                                      className="text-slate-400"
+                                    />{" "}
+                                    {inq.whatsapp}
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">
+                                {new Date(inq.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+
+                            <div className="bg-white border border-slate-100 rounded-xl p-4 mb-4">
+                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1">
+                                <MessageSquare size={12} /> Message
+                              </p>
+                              <p className="text-slate-600 text-sm ">
+                                "{inq.message}"
+                              </p>
+                            </div>
+
+                            {/* Actions */}
+                            {/* --- STATUS BADGE & ACTION BUTTONS --- */}
+                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
+                              {/* Status Badge (Ye batayega ki current status kya hai) */}
+                              <span
+                                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
+                                  inq.status === "Approved"
+                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                                    : inq.status === "Closed"
+                                      ? "bg-slate-50 text-slate-500 border-slate-200"
+                                      : "bg-orange-50 text-orange-600 border-orange-100" // Default Pending color
+                                }`}
+                              >
+                                {inq.status || "Pending"}
+                              </span>
+
+                              {/* Action Buttons (Approve / Close) */}
+                              <div className="flex gap-2">
+                                {/* APPROVE BUTTON */}
+                                <button
+                                  onClick={() =>
+                                    handleInquiryAction(inq._id, "Approved")
+                                  }
+                                  disabled={
+                                    inq.status === "Approved" ||
+                                    inq.status === "Closed"
+                                  }
+                                  className={`text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg transition-colors shadow-sm ${
+                                    inq.status === "Approved" ||
+                                    inq.status === "Closed"
+                                      ? "bg-slate-100 text-slate-400 cursor-not-allowed" // Agar Approve ho chuka hai toh disable kardo
+                                      : "bg-[#0B184A] text-white hover:bg-blue-600 shadow-blue-900/10"
+                                  }`}
+                                >
+                                  {inq.status === "Approved"
+                                    ? "Approved ✓"
+                                    : "Approve"}
+                                </button>
+
+                                {/* CLOSE BUTTON */}
+                                <button
+                                  onClick={() =>
+                                    handleInquiryAction(inq._id, "Closed")
+                                  }
+                                  disabled={inq.status === "Closed"}
+                                  className={`text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg transition-colors border ${
+                                    inq.status === "Closed"
+                                      ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
+                                      : "bg-white border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200"
+                                  }`}
+                                >
+                                  Close
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-20 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                      <ShoppingCart
+                        size={40}
+                        className="mx-auto text-slate-300 mb-4"
+                      />
+                      <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">
+                        No inquiries received yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            <p className="text-center text-slate-400 text-[10px] font-black uppercase tracking-[0.3em] opacity-50 pb-8 mt-4">
               Seller Portal • Source From MP • 2026
             </p>
           </div>

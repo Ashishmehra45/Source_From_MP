@@ -46,7 +46,7 @@ const Header = () => {
   return (
     <div className="w-full">
       {/* 1. TOP UTILITY BAR */}
-      <div className="hidden sm:flex bg-white border-b border-slate-100 md:px-12 py-2 justify-between items-center text-[10px] md:text-[11px] font-semibold text-slate-500 tracking-wider">
+      {/* <div className="hidden sm:flex bg-white border-b border-slate-100 md:px-12 py-2 justify-between items-center text-[10px] md:text-[11px] font-semibold text-slate-500 tracking-wider">
         <div className="flex gap-4 md:gap-8">
           <span className="cursor-pointer hover:text-[#0B184A] uppercase">Currency: USD $</span>
           <span className="cursor-pointer hover:text-[#0B184A] uppercase">Language: EN</span>
@@ -63,7 +63,7 @@ const Header = () => {
             <ChevronRight size={14} />
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* 2. MAIN HEADER */}
       <header className="sticky top-0 z-50 bg-white md:px-12 py-3 md:py-5 flex items-center justify-between gap-4 border-b border-slate-100 shadow-sm md:shadow-none">
