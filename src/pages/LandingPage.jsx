@@ -567,7 +567,7 @@ const LandingPage = () => {
                     className="group bg-white rounded-[2rem] p-4 border border-slate-200 shadow-sm hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] transition-all duration-500 hover:-translate-y-2 flex flex-col h-full"
                   >
                     {/* Image Area - Aspect Ratio use kiya taaki height balance rahe */}
-                    <div className="relative aspect-[4/3] w-full rounded-[1.5rem] overflow-hidden bg-slate-100 mb-4 shrink-0">
+                    <div className="relative aspect-[4/3.5] w-full rounded-[1.5rem] overflow-hidden bg-slate-100 mb-4 shrink-0">
                       {product.image ? (
                         <img
                           src={product.image}
@@ -596,7 +596,7 @@ const LandingPage = () => {
                         {product.seller?.city && (
                           <div className="flex items-center gap-1 text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 shrink-0">
                             <MapPin size={8} className="text-red-500" />
-                            <span className="text-[8px] font-bold uppercase text-slate-600">
+                            <span className="text-[10px] font-bold uppercase text-slate-600">
                               {product.seller.city}
                             </span>
                           </div>
@@ -609,7 +609,7 @@ const LandingPage = () => {
 
                       {/* Description - Fixed height/lines taaki card ki length same rahe */}
                       <div className="flex-1">
-                        <p className="text-slate-500 text-[11px] font-medium leading-relaxed mb-4 line-clamp-3">
+                        <p className="text-slate-500 text-[12px] font-medium leading-relaxed mb-2 ">
                           {product.description ||
                             "Premium quality export product available for bulk orders."}
                         </p>
