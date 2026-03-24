@@ -3,7 +3,7 @@ import api from "../../api/axios";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "../../components/Header";
 import Swal from "sweetalert2"; // ✅ Added for SweetAlert
-import { X } from "lucide-react"; // ✅ Added for Modal Close
+import { X, ArrowRight, MapPin } from "lucide-react"; // ✅ Added for Modal Close
 import {
   FaUserCircle,
   FaBoxOpen,
@@ -107,7 +107,11 @@ const BuyerDashboard = () => {
       const { data } = await api.post("/inquiries/send-inquiry", payload);
 
       if (data.success) {
-        Swal.fire("Success!", "Your inquiry has been sent to the seller.", "success");
+        Swal.fire(
+          "Success!",
+          "Your inquiry has been sent to the seller.",
+          "success",
+        );
         setIsModalOpen(false);
         setFormData({ email: "", quantity: "", whatsapp: "", message: "" });
         // Optional: Update enquiries count immediately
@@ -209,10 +213,10 @@ const BuyerDashboard = () => {
                         ? selectedProduct.image
                         : `${BACKEND_URL}/${selectedProduct.image}`
                       : selectedProduct.images?.[0]
-                      ? selectedProduct.images[0].startsWith("http")
-                        ? selectedProduct.images[0]
-                        : `${BACKEND_URL}/${selectedProduct.images[0]}`
-                      : "https://via.placeholder.com/400"
+                        ? selectedProduct.images[0].startsWith("http")
+                          ? selectedProduct.images[0]
+                          : `${BACKEND_URL}/${selectedProduct.images[0]}`
+                        : "https://via.placeholder.com/400"
                   }
                   alt={selectedProduct.name}
                   className="w-full h-full object-cover"
@@ -222,14 +226,17 @@ const BuyerDashboard = () => {
                 {selectedProduct.name}
               </h4>
               <p className="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-4">
-                {selectedProduct.description || "Standard export quality product."}
+                {selectedProduct.description ||
+                  "Standard export quality product."}
               </p>
               <div className="mt-auto bg-white border border-slate-200 rounded-xl p-4">
                 <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
                   HS Code
                 </p>
                 <p className="text-sm font-mono font-bold text-[#0B184A]">
-                  {selectedProduct.hscode || selectedProduct.hsCode || "Not Specified"}
+                  {selectedProduct.hscode ||
+                    selectedProduct.hsCode ||
+                    "Not Specified"}
                 </p>
               </div>
             </div>
@@ -243,7 +250,9 @@ const BuyerDashboard = () => {
                 <X size={24} />
               </button>
               <header className="mb-8">
-                <h2 className="text-2xl font-bold text-[#0B184A]">Send Inquiry</h2>
+                <h2 className="text-2xl font-bold text-[#0B184A]">
+                  Send Inquiry
+                </h2>
                 <p className="text-slate-400 text-sm mt-1">
                   Please fill the details for direct manufacturer response.
                 </p>
@@ -310,7 +319,9 @@ const BuyerDashboard = () => {
                   type="submit"
                   disabled={isSubmitting}
                   className={`w-full bg-[#0B184A] text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 uppercase tracking-wider text-xs mt-2 ${
-                    isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700 active:scale-[0.98]"
+                    isSubmitting
+                      ? "opacity-70 cursor-not-allowed"
+                      : "hover:bg-blue-700 active:scale-[0.98]"
                   }`}
                 >
                   {isSubmitting ? "Sending..." : "Send Inquiry Now"}
@@ -424,9 +435,9 @@ const BuyerDashboard = () => {
                 </Link>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                 {prodLoading ? (
-                  <div className="col-span-2 text-center py-20">
+                  <div className="col-span-2 text-center ">
                     <FaSpinner className="animate-spin inline mr-3 text-blue-600" />{" "}
                     Finding best matches...
                   </div>
@@ -439,10 +450,10 @@ const BuyerDashboard = () => {
                     return (
                       <div
                         key={product._id}
-                        className="bg-white rounded-[40px] shadow-md border border-gray-50 p-6 flex flex-col group hover:shadow-2xl transition-all duration-500"
+                        className="bg-white rounded-[40px] shadow-md border border-gray-50 p-6 flex flex-col group hover:shadow-2xl transition-all duration-500 h-full"
                       >
                         {/* --- Image Section --- */}
-                        <div className="bg-[#F4F7FA] h-52 rounded-[30px] mb-5 flex items-center justify-center overflow-hidden relative">
+                        <div className="bg-[#F4F7FA] h-52 rounded-[30px] mb-5 flex items-center justify-center overflow-hidden relative shrink-0">
                           <img
                             src={
                               product.image
@@ -455,13 +466,6 @@ const BuyerDashboard = () => {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
 
-                          {/* Live Badge like your dashboard */}
-                          <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-gray-100">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <span className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">
-                              Live
-                            </span>
-                          </div>
 
                           <div className="absolute top-4 right-4">
                             <button
@@ -469,37 +473,56 @@ const BuyerDashboard = () => {
                               className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all ${
                                 isSaved
                                   ? "bg-red-50 text-red-500"
-                                  : "bg-white/80 text-gray-400"
+                                  : "bg-white/80 text-gray-400 hover:text-red-500"
                               }`}
                             >
-                              {isSaved ? <FaHeart /> : <FaRegHeart />}
+                              {isSaved ? (
+                                <FaHeart size={16} />
+                              ) : (
+                                <FaRegHeart size={16} />
+                              )}
                             </button>
                           </div>
                         </div>
 
                         {/* --- Content Section --- */}
-                        <div className="flex-1 px-1">
-                          <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">
-                            {product.category || "General"}
-                          </span>
+                        <div className="flex-1 px-1 flex flex-col">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">
+                              {product.category || "General"}
+                            </span>
 
-                          <h3 className="text-[#000F29] text-xl font-black mb-2 truncate group-hover:text-blue-600 transition-colors">
+                            {/* Location Badge */}
+                            {product.seller?.city && (
+                              <div className="flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-100 shrink-0">
+                                <MapPin size={10} className="text-red-500" />
+                                <span className="text-[9px] font-bold uppercase tracking-tight text-slate-600">
+                                  {product.seller.city}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <h3 className="text-[#000F29] text-xl font-black mb-2 group-hover:text-blue-600 transition-colors tracking-tight">
                             {product.name}
                           </h3>
 
-                          <p className="text-slate-500 text-xs font-medium leading-relaxed mb-auto ">
-                            {product.description ||
-                              "Premium quality export-ready product from Madhya Pradesh."}
-                          </p>
+                          {/* ✅ UPDATED: Description ab poora dikhega, line-clamp hata diya */}
+                          <div className="flex-1 ">
+                            <p className="text-slate-500 text-xs font-medium leading-relaxed">
+                              {product.description ||
+                                "Premium quality export-ready product from Madhya Pradesh."}
+                            </p>
+                          </div>
                         </div>
 
-                        {/* --- Footer Section (Price removed, HS Code added) --- */}
-                        <div className="flex justify-between items-center pt-5 border-t border-gray-50">
+                        {/* --- Footer Section --- */}
+                        <div className="flex justify-between items-center pt-5 border-t border-gray-50 mt-auto">
                           <div className="flex flex-col">
                             <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
                               HS Code
                             </span>
-                            <span className="font-mono font-bold text-slate-700 text-sm italic">
+                            <span className="font-mono font-bold text-slate-700 text-sm ">
                               {product.hscode || product.hsCode || "---"}
                             </span>
                           </div>

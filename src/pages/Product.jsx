@@ -3,6 +3,7 @@ import api from "../api/axios";
 import Header from "../components/Header";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+
 import {
   FaSearch,
   FaMapMarkerAlt,
@@ -12,7 +13,9 @@ import {
   FaBoxOpen,
   FaChevronDown,
 } from "react-icons/fa";
-import { X, ArrowRight } from "lucide-react"; // Modal ke icons
+
+// Lucide Icons - Yahan MapPin add kar diya
+import { X, ArrowRight, MapPin } from "lucide-react";
 
 const Products = () => {
   const navigate = useNavigate();
@@ -56,9 +59,10 @@ const Products = () => {
     "Other",
   ];
 
-  const BACKEND_URL = window.location.hostname === "localhost" 
-    ? "http://localhost:5000" 
-    : "https://source-from-mp-backend.onrender.com";
+  const BACKEND_URL =
+    window.location.hostname === "localhost"
+      ? "http://localhost:5000"
+      : "https://source-from-mp-backend.onrender.com";
 
   // ==========================================
   // 🔥 1. DATA FETCHING LOGIC
@@ -90,7 +94,7 @@ const Products = () => {
     let result = [...products];
     if (selectedCategory !== "All") {
       result = result.filter(
-        (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
+        (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase(),
       );
     }
     if (searchQuery) {
@@ -99,7 +103,7 @@ const Products = () => {
         (p) =>
           p.name.toLowerCase().includes(query) ||
           (p.hsCode && p.hsCode.toString().includes(query)) ||
-          (p.hscode && p.hscode.toString().includes(query))
+          (p.hscode && p.hscode.toString().includes(query)),
       );
     }
     if (sortBy === "lowToHigh") {
@@ -175,7 +179,11 @@ const Products = () => {
       const { data } = await api.post("/inquiries/send-inquiry", payload);
 
       if (data.success) {
-        Swal.fire("Success!", "Your inquiry has been sent to the seller.", "success");
+        Swal.fire(
+          "Success!",
+          "Your inquiry has been sent to the seller.",
+          "success",
+        );
         setIsModalOpen(false);
         setFormData({ email: "", quantity: "", whatsapp: "", message: "" });
       }
@@ -216,7 +224,6 @@ const Products = () => {
       {isModalOpen && selectedProduct && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-4xl rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-300">
-            
             {/* LEFT PANEL: PRODUCT PREVIEW */}
             <div className="md:w-[35%] bg-slate-50 p-8 border-r border-slate-100 flex flex-col">
               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-6 block">
@@ -231,10 +238,10 @@ const Products = () => {
                         ? selectedProduct.image
                         : `${BACKEND_URL}/${selectedProduct.image}`
                       : selectedProduct.images?.[0]
-                      ? selectedProduct.images[0].startsWith("http")
-                        ? selectedProduct.images[0]
-                        : `${BACKEND_URL}/${selectedProduct.images[0]}`
-                      : "https://via.placeholder.com/400"
+                        ? selectedProduct.images[0].startsWith("http")
+                          ? selectedProduct.images[0]
+                          : `${BACKEND_URL}/${selectedProduct.images[0]}`
+                        : "https://via.placeholder.com/400"
                   }
                   alt={selectedProduct.name}
                   className="w-full h-full object-cover"
@@ -246,7 +253,8 @@ const Products = () => {
               </h4>
 
               <p className="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-4">
-                {selectedProduct.description || "Standard export quality product."}
+                {selectedProduct.description ||
+                  "Standard export quality product."}
               </p>
 
               <div className="mt-auto bg-white border border-slate-200 rounded-xl p-4">
@@ -254,7 +262,9 @@ const Products = () => {
                   HS Code
                 </p>
                 <p className="text-sm font-mono font-bold text-[#0B184A]">
-                  {selectedProduct.hscode || selectedProduct.hsCode || "Not Specified"}
+                  {selectedProduct.hscode ||
+                    selectedProduct.hsCode ||
+                    "Not Specified"}
                 </p>
               </div>
             </div>
@@ -269,7 +279,9 @@ const Products = () => {
               </button>
 
               <header className="mb-8">
-                <h2 className="text-2xl font-bold text-[#0B184A]">Send Inquiry</h2>
+                <h2 className="text-2xl font-bold text-[#0B184A]">
+                  Send Inquiry
+                </h2>
                 <p className="text-slate-400 text-sm mt-1">
                   Please fill the details for direct manufacturer response.
                 </p>
@@ -341,7 +353,9 @@ const Products = () => {
                   type="submit"
                   disabled={isSubmitting}
                   className={`w-full bg-[#0B184A] text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 uppercase tracking-wider text-xs mt-2 ${
-                    isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700 active:scale-[0.98]"
+                    isSubmitting
+                      ? "opacity-70 cursor-not-allowed"
+                      : "hover:bg-blue-700 active:scale-[0.98]"
                   }`}
                 >
                   {isSubmitting ? "Sending..." : "Send Inquiry Now"}
@@ -358,15 +372,21 @@ const Products = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex-shrink-0">
-              <h1 className="text-4xl font-black tracking-tight mb-2 uppercase">Marketplace</h1>
+              <h1 className="text-4xl font-black tracking-tight mb-2 uppercase">
+                Marketplace
+              </h1>
               <div className="flex items-center gap-2 text-blue-300/60 text-xs font-bold uppercase tracking-widest">
-                <span className="w-8 h-[2px] bg-blue-500"></span> Authenticated Direct Sourcing
+                <span className="w-8 h-[2px] bg-blue-500"></span> Authenticated
+                Direct Sourcing
               </div>
             </div>
 
             <div className="flex flex-col md:flex-row items-center gap-4 w-full max-w-4xl">
               <div className="relative flex-grow w-full">
-                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50" size={14} />
+                <FaSearch
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50"
+                  size={14}
+                />
                 <input
                   type="text"
                   placeholder="Search Product Name / HS Code..."
@@ -383,12 +403,19 @@ const Products = () => {
                   className="w-full bg-white/5 border border-white/10 text-white py-3.5 pl-5 pr-10 rounded-xl appearance-none cursor-pointer text-sm font-bold uppercase tracking-wider outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
                 >
                   {categories.map((cat) => (
-                    <option key={cat} value={cat} className="text-[#0B184A] font-sans">
+                    <option
+                      key={cat}
+                      value={cat}
+                      className="text-[#0B184A] font-sans"
+                    >
                       {cat}
                     </option>
                   ))}
                 </select>
-                <FaChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" size={10} />
+                <FaChevronDown
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none"
+                  size={10}
+                />
               </div>
             </div>
           </div>
@@ -396,7 +423,7 @@ const Products = () => {
       </div>
 
       {/* --- 🛍️ MAIN GRID AREA --- */}
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <main className="max-w-7xl mx-auto ">
         <div className="flex items-center justify-between mb-10 border-b border-gray-100 pb-6">
           <div>
             <h2 className="text-[#0B184A] text-2xl font-black uppercase tracking-tight flex items-center gap-3">
@@ -425,68 +452,92 @@ const Products = () => {
             </p>
           </div>
         ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 items-start">
             {filteredProducts.map((product) => {
               const isSaved = savedProducts.some((p) => p._id === product._id);
-              
+
               return (
                 <div
                   key={product._id}
                   className="bg-white rounded-[40px] shadow-md border border-gray-50 p-6 flex flex-col group hover:shadow-2xl transition-all duration-500 h-full"
                 >
-                  <div className="bg-[#F4F7FA] h-52 rounded-[30px] mb-5 flex items-center justify-center overflow-hidden relative">
+                  {/* Image Section */}
+                  <div className="bg-[#F4F7FA] h-52 rounded-[30px] mb-5 flex items-center justify-center overflow-hidden relative shrink-0">
                     <img
                       src={
                         product.image
-                          ? product.image.startsWith("http") ? product.image : `${BACKEND_URL}/${product.image}`
+                          ? product.image.startsWith("http")
+                            ? product.image
+                            : `${BACKEND_URL}/${product.image}`
                           : product.images?.[0]
-                            ? product.images[0].startsWith("http") ? product.images[0] : `${BACKEND_URL}/${product.images[0]}`
+                            ? product.images[0].startsWith("http")
+                              ? product.images[0]
+                              : `${BACKEND_URL}/${product.images[0]}`
                             : "https://via.placeholder.com/400"
                       }
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
 
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border border-gray-100">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span className="text-[9px] font-black text-emerald-700 uppercase tracking-wider">Live</span>
-                    </div>
-
                     <div className="absolute top-4 right-4">
                       <button
                         onClick={() => toggleSaveProduct(product)}
                         className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm transition-all ${
-                          isSaved ? "bg-red-50 text-red-500" : "bg-white/80 text-gray-400 hover:text-red-500"
+                          isSaved
+                            ? "bg-red-50 text-red-500"
+                            : "bg-white/80 text-gray-400 hover:text-red-500"
                         }`}
                       >
-                        {isSaved ? <FaHeart size={16} /> : <FaRegHeart size={16} />}
+                        {isSaved ? (
+                          <FaHeart size={16} />
+                        ) : (
+                          <FaRegHeart size={16} />
+                        )}
                       </button>
                     </div>
                   </div>
 
+                  {/* Content Section */}
                   <div className="flex-1 px-1 flex flex-col">
-                    <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">
-                      {product.category || "General"}
-                    </span>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-blue-600 text-[10px] font-black uppercase tracking-[0.2em]">
+                        {product.category || "General"}
+                      </span>
 
-                    <h3 className="text-[#000F29] text-xl font-black mb-2 line-clamp-1 group-hover:text-blue-600 transition-colors tracking-tight">
+                      {product.seller?.city && (
+                        <div className="flex items-center gap-1 text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-100 shrink-0">
+                          <MapPin size={10} className="text-red-500" />
+                          <span className="text-[9px] font-bold uppercase tracking-tight text-slate-600">
+                            {product.seller.city}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <h3 className="text-[#000F29] text-xl font-black mb-2 tracking-tight group-hover:text-blue-600 transition-colors">
                       {product.name}
                     </h3>
 
-                    <p className="text-slate-500 text-xs font-medium leading-relaxed mb-auto pb-4">
-                      {product.description || "Premium quality export-ready product sourced directly from Madhya Pradesh."}
-                    </p>
+                    {/* ✅ FIX: line-clamp-3 hata diya taaki poora description dikhe */}
+                    <div className="flex-1 mb-4">
+                      <p className="text-slate-500 text-xs font-medium leading-relaxed">
+                        {product.description ||
+                          "Premium quality export-ready product sourced directly from Madhya Pradesh."}
+                      </p>
+                    </div>
                   </div>
 
+                  {/* Bottom Footer Section */}
                   <div className="pt-5 border-t border-gray-50 flex justify-between items-center mt-auto">
                     <div className="flex flex-col">
-                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">HS Code</span>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                        HS Code
+                      </span>
                       <span className="font-mono font-bold text-slate-700 text-sm">
                         {product.hscode || product.hsCode || "---"}
                       </span>
                     </div>
 
-                    {/* 🔥 MODAL TRIGGER BUTTON */}
                     <button
                       onClick={() => {
                         setSelectedProduct(product);
@@ -504,9 +555,12 @@ const Products = () => {
         ) : (
           <div className="bg-white rounded-[40px] py-40 text-center border-2 border-dashed border-gray-100 max-w-2xl mx-auto mt-10">
             <FaBoxOpen className="mx-auto text-gray-200 text-7xl mb-6" />
-            <h3 className="text-2xl font-black text-[#0B184A] mb-3 uppercase">Zero Results Found</h3>
+            <h3 className="text-2xl font-black text-[#0B184A] mb-3 uppercase">
+              Zero Results Found
+            </h3>
             <p className="text-gray-400 font-medium mb-10 px-10">
-              Try searching for generic terms or resetting your category filter to "All Products".
+              Try searching for generic terms or resetting your category filter
+              to "All Products".
             </p>
             <button
               onClick={() => {

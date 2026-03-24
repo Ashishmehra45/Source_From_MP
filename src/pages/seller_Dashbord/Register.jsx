@@ -1,16 +1,29 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, FileText, CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, MapPin, Lock } from 'lucide-react';
+import { Building2, FileText, CheckCircle2, ChevronRight, ChevronLeft, UploadCloud, MapPin, Lock, Map, Home } from 'lucide-react';
 import Swal from 'sweetalert2';
-import { Link, useNavigate } from 'react-router-dom'; // 1. Link import kiya
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
-import api from '../../api/axios' // 2. Axios instance import kiya  
+import api from '../../api/axios';
 
 const ExporterRegistration = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Madhya Pradesh ke pure 55 Districts ki updated list (2026)
+  const mpDistricts = [
+    "Agar Malwa", "Alirajpur", "Anuppur", "Ashoknagar", "Balaghat", "Barwani", 
+    "Betul", "Bhind", "Bhopal", "Burhanpur", "Chhatarpur", "Chhindwara", 
+    "Damoh", "Datia", "Dewas", "Dhar", "Dindori", "Guna", "Gwalior", "Harda", 
+    "Hoshangabad", "Indore", "Jabalpur", "Jhabua", "Katni", "Khandwa", 
+    "Khargone", "Mandla", "Mandsaur", "Morena", "Narsinghpur", "Neemuch", 
+    "Niwari", "Panna", "Raisen", "Rajgarh", "Ratlam", "Rewa", "Sagar", 
+    "Satna", "Sehore", "Seoni", "Shahdol", "Shajapur", "Sheopur", "Shivpuri", 
+    "Sidhi", "Singrauli", "Tikamgarh", "Ujjain", "Umaria", "Vidisha", 
+    "Maihar", "Mauganj", "Pandhurna"
+  ].sort();
 
   const [formData, setFormData] = useState({
     companyName: '',
@@ -21,7 +34,11 @@ const ExporterRegistration = () => {
     companyHeritage: '',
     hasIECode: false,
     iecNumber: '',
-    exportCountries: ''
+    exportCountries: '',
+    // ✅ Address Fields Updated
+    address: '', // Street / Village
+    city: '',    // District
+    state: 'Madhya Pradesh'
   });
 
   const steps = [{ id: 1, title: "Identity" }, { id: 2, title: "Verification" }];
@@ -43,9 +60,8 @@ const ExporterRegistration = () => {
     if (e.target.files[0]) setSelectedFile(e.target.files[0]);
   };
 
- const handleFinalSubmit = async (e) => {
+  const handleFinalSubmit = async (e) => {
     e.preventDefault();
-
     Swal.fire({
       title: 'Processing...',
       text: 'Creating your exporter profile',
@@ -63,7 +79,6 @@ const ExporterRegistration = () => {
       });
 
       if (response.status === 201) {
-        // ✅ Success Alert confirm hone ke baad hi redirect hoga
         Swal.fire({
           icon: 'success',
           title: 'Success!',
@@ -71,9 +86,7 @@ const ExporterRegistration = () => {
           confirmButtonColor: '#10b981',
           confirmButtonText: 'Login Now' 
         }).then((result) => {
-          if (result.isConfirmed) {
-            navigate('/seller/login'); // Redirect to login
-          }
+          if (result.isConfirmed) navigate('/seller/login');
         });
       }
     } catch (error) {
@@ -94,7 +107,6 @@ const ExporterRegistration = () => {
 
       <div className="max-w-3xl mx-auto pt-8 md:pt-12 px-4 md:px-6">
         
-        {/* BRANDING HEADER */}
         <div className="text-center mb-10">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-flex items-center gap-2 bg-blue-50 px-4 py-1.5 rounded-full mb-4">
             <MapPin size={14} className="text-blue-600" />
@@ -139,7 +151,6 @@ const ExporterRegistration = () => {
           })}
         </div>
 
-        {/* FORM SECTION */}
         <form onSubmit={handleFinalSubmit} className="bg-white p-6 md:p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-slate-100 min-h-[450px] flex flex-col transition-all overflow-hidden">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
@@ -150,7 +161,37 @@ const ExporterRegistration = () => {
                   <div className="space-y-1.5"><label className="text-[12px] font-black uppercase text-slate-400 ml-1">Authorized Person</label><input required name="authorizedPerson" value={formData.authorizedPerson} onChange={handleInputChange} type="text" placeholder="Full Name" className="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner" /></div>
                   <div className="space-y-1.5"><label className="text-[12px] font-black uppercase text-slate-400 ml-1">Mobile Number</label><input required name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} type="tel" placeholder="+91" className="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner" /></div>
                   <div className="space-y-1.5"><label className="text-[12px] font-black uppercase text-slate-400 ml-1">Business Email</label><input required name="email" value={formData.email} onChange={handleInputChange} type="email" placeholder="email@domain.com" className="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner" /></div>
-                  <div className="p-1 md:col-span-2"><label className="text-[12px] font-black uppercase text-slate-400 ml-1">Create Password</label><div className="relative"><Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" /><input required name="password" value={formData.password} onChange={handleInputChange} type="password" placeholder="••••••••" className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner" /></div></div>
+                  
+                  {/* ✅ ADDRESS SECTION (New Structure) */}
+                  <div className="md:col-span-2 space-y-1.5">
+                    <label className="text-[12px] font-black uppercase text-slate-400 ml-1">Street Address / Village</label>
+                    <div className="relative">
+                        <Home size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                        <input required name="address" value={formData.address} onChange={handleInputChange} type="text" placeholder="House No, Street, Village or Landmark" className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-black uppercase text-slate-400 ml-1">City / District</label>
+                    <select required name="city" value={formData.city} onChange={handleInputChange} className="w-full px-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner appearance-none">
+                      <option value="">Select District</option>
+                      {mpDistricts.map(city => <option key={city} value={city}>{city}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[12px] font-black uppercase text-slate-400 ml-1">State</label>
+                    <input disabled name="state" value={formData.state} type="text" className="w-full px-4 py-3.5 bg-slate-100 border-none rounded-xl font-bold text-sm outline-none text-slate-500 cursor-not-allowed" />
+                  </div>
+                  
+                  {/* ✅ Password Field (Last) */}
+                  <div className="p-1 md:col-span-2 mt-2">
+                    <label className="text-[12px] font-black uppercase text-slate-400 ml-1">Create Password</label>
+                    <div className="relative">
+                      <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
+                      <input required name="password" value={formData.password} onChange={handleInputChange} type="password" placeholder="••••••••" className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-600 font-bold text-sm outline-none shadow-inner" />
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -177,32 +218,23 @@ const ExporterRegistration = () => {
             )}
           </AnimatePresence>
 
-          {/* FOOTER NAVIGATION */}
           <div className="mt-auto pt-8 md:pt-10 flex justify-between items-center border-t border-slate-50 z-10">
             <button type="button" onClick={prevStep} className={`px-6 py-3 rounded-xl border border-slate-200 font-black text-[11px] md:text-[12px] uppercase tracking-widest transition-all hover:bg-slate-50 active:scale-95 flex items-center gap-2 ${currentStep === 1 ? 'invisible' : 'text-slate-500'}`}>
               <ChevronLeft size={16} /> Back
             </button>
             
             {currentStep === 1 ? (
-              <button 
-                type="button" 
-                onClick={nextStep} 
-                className="px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest text-white shadow-xl transition-all active:scale-95 flex items-center gap-2 bg-[#0B184A] shadow-blue-100 hover:bg-blue-600"
-              >
+              <button type="button" onClick={nextStep} className="px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest text-white shadow-xl transition-all active:scale-95 flex items-center gap-2 bg-[#0B184A] shadow-blue-100 hover:bg-blue-600">
                 Continue <ChevronRight size={16} />
               </button>
             ) : (
-              <button 
-                type="submit" 
-                className="px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest text-white shadow-xl transition-all active:scale-95 flex items-center gap-2 bg-emerald-600 shadow-emerald-100 hover:bg-emerald-700"
-              >
+              <button type="submit" className="px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-[11px] md:text-[12px] uppercase tracking-widest text-white shadow-xl transition-all active:scale-95 flex items-center gap-2 bg-emerald-600 shadow-emerald-100 hover:bg-emerald-700">
                 Final Submit <ChevronRight size={16} />
               </button>
             )}
           </div>
         </form>
 
-        {/* 2. LOGIN LINK ADDED HERE */}
         <div className="text-center mt-8">
           <p className="text-slate-400 text-[11px] font-black uppercase tracking-[0.2em]">
             Already have an Account?{' '}
@@ -211,7 +243,6 @@ const ExporterRegistration = () => {
             </Link>
           </p>
         </div>
-
       </div>
     </div>
   );

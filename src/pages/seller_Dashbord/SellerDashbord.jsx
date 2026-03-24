@@ -20,6 +20,7 @@ import {
   Mail, // ✅ Added for inquiries
   Phone, // ✅ Added for inquiries
   MessageSquare, // ✅ Added for inquiries
+  Home,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
@@ -716,143 +717,174 @@ const Dashboard = () => {
 
                 <div className="space-y-6">
                   {loading ? (
-                    <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest">
-                      Loading...
+                    <div className="text-center py-10 text-slate-400 font-bold uppercase tracking-widest animate-pulse">
+                      Loading Inquiries...
                     </div>
                   ) : inquiries.length > 0 ? (
                     inquiries.map((inq) => (
                       <div
                         key={inq._id}
-                        className="border border-slate-100 bg-slate-50/50 rounded-[2rem] p-6 hover:shadow-lg transition-all"
+                        className="bg-white rounded-2xl border border-slate-200 p-6 flex flex-col md:flex-row gap-8 hover:shadow-md transition-shadow"
                       >
-                        <div className="flex flex-col md:flex-row gap-6">
-                          {/* Product Details side */}
-                          <div className="md:w-1/3 flex gap-4 border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 md:pr-6">
-                            <div className="w-20 h-20 bg-white rounded-2xl overflow-hidden shrink-0 border border-slate-100">
-                              <img
-                                src={
-                                  inq.productImage ||
-                                  "https://via.placeholder.com/150"
-                                }
-                                alt="product"
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                            <div>
-                              <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">
-                                Inquiry For
-                              </p>
-                              <h4 className="text-[#0B184A] font-bold text-lg leading-tight line-clamp-2">
-                                {inq.productName}
-                              </h4>
-                              <p className="text-xs text-slate-500 font-medium mt-1">
-                                Qty Req:{" "}
-                                <span className="text-[#0B184A] font-black">
-                                  {inq.quantity}
-                                </span>
-                              </p>
-                            </div>
+                        {/* --- Left: Product Details (Big Image + Name below) --- */}
+                        <div className="md:w-[220px] flex flex-col shrink-0 border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 pr-4">
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+                            Interested In
+                          </p>
+                          <div className="w-full aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden mb-4 border border-slate-100">
+                            <img
+                              src={
+                                inq.productId?.image ||
+                                inq.productImage ||
+                                "https://via.placeholder.com/150"
+                              }
+                              alt="product"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h4 className="text-slate-800 font-bold text-base leading-tight mb-1.5">
+                              {inq.productId?.name || inq.productName}
+                            </h4>
+                            <p className="text-xs text-slate-500 font-medium bg-slate-50 inline-block px-2 py-1 rounded-md border border-slate-100">
+                              Qty:{" "}
+                              <span className="font-bold text-slate-700">
+                                {inq.quantity}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* --- Middle: Buyer Details (Clean List) --- */}
+                        <div className="flex-1 flex flex-col gap-2 justify-center">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-xl font-bold text-slate-800">
+                              {inq.buyerId?.name || "Guest Buyer"}
+                            </h3>
+                            <span className="px-3 py-1.5 bg-blue-50 text-blue-700 font-bold text-[11px] rounded-full border border-blue-100 shadow-sm tracking-wide shrink-0">
+                              {new Date(inq.createdAt).toLocaleDateString(
+                                "en-IN",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                },
+                              )}
+                            </span>
                           </div>
 
-                          {/* Buyer Details Side */}
-                          <div className="flex-1 flex flex-col justify-between">
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
-                                  <Mail size={16} className="text-slate-400" />{" "}
-                                  {inq.email}
-                                </div>
-                                {inq.whatsapp && (
-                                  <div className="flex items-center gap-2 text-slate-600 text-sm font-medium">
-                                    <Phone
-                                      size={16}
-                                      className="text-slate-400"
-                                    />{" "}
-                                    {inq.whatsapp}
-                                  </div>
-                                )}
-                              </div>
-                              <span className="text-[10px] text-slate-400 font-bold tracking-widest uppercase">
-                                {new Date(inq.createdAt).toLocaleDateString()}
+                          <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-slate-600 mb-2 mt-1">
+                            <span className="flex items-center gap-1.5">
+                              <Mail size={14} className="text-slate-400" />{" "}
+                              {inq.email}
+                            </span>
+                            {inq.whatsapp && (
+                              <a
+                                href={`https://wa.me/${inq.whatsapp.replace(/\D/g, "")}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-1.5 text-green-600 font-medium hover:underline"
+                              >
+                                <Phone size={14} /> {inq.whatsapp}
+                              </a>
+                            )}
+                            {inq.buyerId && (
+                              <span className="flex items-center gap-1.5">
+                                <MapPin size={14} className="text-red-400" />
+                                {inq.buyerId.city}, {inq.buyerId.state}
                               </span>
-                            </div>
+                            )}
+                          </div>
 
-                            <div className="bg-white border border-slate-100 rounded-xl p-4 mb-4">
-                              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1">
-                                <MessageSquare size={12} /> Message
-                              </p>
-                              <p className="text-slate-600 text-sm ">
+                          {/* Simple Message Area */}
+                          {inq.message && (
+                            
+                    
+                            <div className="bg-slate-50 rounded-lg p-4 mt-2 border border-slate-100">
+                            
+                              <p className="text-sm text-slate-600  leading-relaxed">
                                 "{inq.message}"
                               </p>
                             </div>
+                          )}
 
-                            {/* Actions */}
-                            {/* --- STATUS BADGE & ACTION BUTTONS --- */}
-                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-                              {/* Status Badge (Ye batayega ki current status kya hai) */}
-                              <span
-                                className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${
-                                  inq.status === "Approved"
-                                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                                    : inq.status === "Closed"
-                                      ? "bg-slate-50 text-slate-500 border-slate-200"
-                                      : "bg-orange-50 text-orange-600 border-orange-100" // Default Pending color
-                                }`}
-                              >
-                                {inq.status || "Pending"}
-                              </span>
-
-                              {/* Action Buttons (Approve / Close) */}
-                              <div className="flex gap-2">
-                                {/* APPROVE BUTTON */}
-                                <button
-                                  onClick={() =>
-                                    handleInquiryAction(inq._id, "Approved")
-                                  }
-                                  disabled={
-                                    inq.status === "Approved" ||
-                                    inq.status === "Closed"
-                                  }
-                                  className={`text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg transition-colors shadow-sm ${
-                                    inq.status === "Approved" ||
-                                    inq.status === "Closed"
-                                      ? "bg-slate-100 text-slate-400 cursor-not-allowed" // Agar Approve ho chuka hai toh disable kardo
-                                      : "bg-[#0B184A] text-white hover:bg-blue-600 shadow-blue-900/10"
-                                  }`}
-                                >
-                                  {inq.status === "Approved"
-                                    ? "Approved ✓"
-                                    : "Approve"}
-                                </button>
-
-                                {/* CLOSE BUTTON */}
-                                <button
-                                  onClick={() =>
-                                    handleInquiryAction(inq._id, "Closed")
-                                  }
-                                  disabled={inq.status === "Closed"}
-                                  className={`text-[10px] uppercase tracking-widest font-bold px-4 py-2 rounded-lg transition-colors border ${
-                                    inq.status === "Closed"
-                                      ? "bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed"
-                                      : "bg-white border-slate-200 text-red-500 hover:bg-red-50 hover:border-red-200"
-                                  }`}
-                                >
-                                  Close
-                                </button>
+                          {/* Company Details Line */}
+                          {inq.buyerId &&
+                            (inq.buyerId.companyName ||
+                              inq.buyerId.country) && (
+                              <div className="flex items-center gap-2 text-xs text-slate-500 mt-2 font-medium">
+                                <Home size={12} className="text-slate-400" />
+                                <span>
+                                  {inq.buyerId.companyName ||
+                                    "Individual Buyer"}{" "}
+                                  • {inq.buyerId.country}
+                                </span>
                               </div>
-                            </div>
+                            )}
+                        </div>
+
+                        {/* --- Right: Status & Actions (Minimal) --- */}
+                        <div className="md:w-48 flex flex-col items-end justify-between border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 pl-0 md:pl-6 shrink-0">
+                          <div className="mb-4 md:mb-0 w-full text-right">
+                            <span
+                              className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                inq.status === "Approved"
+                                  ? "bg-green-100 text-green-700 border border-green-200"
+                                  : inq.status === "Closed"
+                                    ? "bg-slate-100 text-slate-600 border border-slate-200"
+                                    : "bg-orange-100 text-orange-700 border border-orange-200"
+                              }`}
+                            >
+                              {inq.status || "Pending"}
+                            </span>
+                          </div>
+
+                          <div className="flex md:flex-col gap-2 w-full">
+                            <button
+                              onClick={() =>
+                                handleInquiryAction(inq._id, "Approved")
+                              }
+                              disabled={
+                                inq.status === "Approved" ||
+                                inq.status === "Closed"
+                              }
+                              className={`w-full py-2 px-4 rounded-lg text-xs font-bold transition-colors ${
+                                inq.status === "Approved" ||
+                                inq.status === "Closed"
+                                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                                  : "bg-blue-600 text-white hover:bg-blue-700"
+                              }`}
+                            >
+                              {inq.status === "Approved"
+                                ? "Approved"
+                                : "Approve"}
+                            </button>
+
+                            <button
+                              onClick={() =>
+                                handleInquiryAction(inq._id, "Closed")
+                              }
+                              disabled={inq.status === "Closed"}
+                              className={`w-full py-2 px-4 rounded-lg text-xs font-bold transition-colors border ${
+                                inq.status === "Closed"
+                                  ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed"
+                                  : "bg-white border-red-200 text-red-500 hover:bg-red-50"
+                              }`}
+                            >
+                              Close
+                            </button>
                           </div>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-20 bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200">
+                    <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
                       <ShoppingCart
-                        size={40}
-                        className="mx-auto text-slate-300 mb-4"
+                        size={32}
+                        className="mx-auto text-slate-300 mb-3"
                       />
-                      <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">
-                        No inquiries received yet.
+                      <p className="text-slate-500 font-medium text-sm">
+                        You have no inquiries yet.
                       </p>
                     </div>
                   )}

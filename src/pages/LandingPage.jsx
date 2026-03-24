@@ -23,7 +23,6 @@ import Footer from "../components/Footer";
 import api from "../api/axios";
 import Swal from "sweetalert2";
 
-
 // Custom SVG Icons (Standard for professional B2B sites)
 const IconGlobe = () => (
   <svg
@@ -86,6 +85,13 @@ const LandingPage = () => {
 
     fetchPublicProducts();
   }, []);
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+  }, [isModalOpen]);
 
   const departments = [
     "GI Products",
@@ -135,78 +141,82 @@ const LandingPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  // 1. LocalStorage se Buyer ka data nikaalein
-  const buyerData = JSON.parse(localStorage.getItem('buyerInfo'));
+    // 1. LocalStorage se Buyer ka data nikaalein
+    const buyerData = JSON.parse(localStorage.getItem("buyerInfo"));
 
-  // 2. Check karein ki buyer logged in hai ya nahi
-  if (!buyerData || !buyerData.token) {
-  // 📍 Login se pehle product ID save karo
-  localStorage.setItem('pendingInquiryProductId', selectedProduct._id);
+    // 2. Check karein ki buyer logged in hai ya nahi
+    if (!buyerData || !buyerData.token) {
+      // 📍 Login se pehle product ID save karo
+      localStorage.setItem("pendingInquiryProductId", selectedProduct._id);
 
-  Swal.fire({
-    title: 'Login Required',
-    text: 'Please login as a Buyer to send an inquiry.',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonText: 'Login Now'
-  }).then((result) => {
-    if (result.isConfirmed) navigate('/buyer/login');
-  });
-  return;
-}
-
-  setIsSubmitting(true);
-
-  try {
-    // 3. Payload taiyar karein (Model import karne ki zarurat nahi!)
-    const payload = {
-      productId: selectedProduct._id,
-      sellerId: selectedProduct.seller, // Product ke sath seller ki ID honi chahiye
-      buyerId: buyerData._id,           // Login ke waqt jo ID mili thi
-      productName: selectedProduct.name,
-      productImage: selectedProduct.image,
-      hscode: selectedProduct.hscode,
-      email: formData.email,
-      quantity: formData.quantity,
-      whatsapp: formData.whatsapp,
-      message: formData.message
-    };
-
-    // 4. Aapka axios instance use karein
-    const { data } = await api.post("/inquiries/send-inquiry", payload);
-
-    if (data.success) {
-      Swal.fire('Success!', 'Your inquiry has been sent to the seller.', 'success');
-      setIsModalOpen(false);
-      setFormData({ email: '', quantity: '', whatsapp: '', message: '' });
+      Swal.fire({
+        title: "Login Required",
+        text: "Please login as a Buyer to send an inquiry.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Login Now",
+      }).then((result) => {
+        if (result.isConfirmed) navigate("/buyer/login");
+      });
+      return;
     }
-  } catch (error) {
-    console.error("Inquiry Error:", error);
-    const msg = error.response?.data?.message || "Failed to send inquiry";
-    Swal.fire('Error', msg, 'error');
-  } finally {
-    setIsSubmitting(false);
-  }
-};
 
-useEffect(() => {
-  const pendingProductId = localStorage.getItem('pendingInquiryProductId');
-  const buyerData = localStorage.getItem('buyerInfo');
+    setIsSubmitting(true);
 
-  // Agar product ID hai aur banda ab login ho chuka hai
-  if (pendingProductId && buyerData && products.length > 0) {
-    const product = products.find(p => p._id === pendingProductId);
-    if (product) {
-      setSelectedProduct(product);
-      setIsModalOpen(true);
-      // Kaam ho gaya, ab clean up kar do taaki baar-baar na khule
-      localStorage.removeItem('pendingInquiryProductId');
+    try {
+      // 3. Payload taiyar karein (Model import karne ki zarurat nahi!)
+      const payload = {
+        productId: selectedProduct._id,
+        sellerId: selectedProduct.seller, // Product ke sath seller ki ID honi chahiye
+        buyerId: buyerData._id, // Login ke waqt jo ID mili thi
+        productName: selectedProduct.name,
+        productImage: selectedProduct.image,
+        hscode: selectedProduct.hscode,
+        email: formData.email,
+        quantity: formData.quantity,
+        whatsapp: formData.whatsapp,
+        message: formData.message,
+      };
+
+      // 4. Aapka axios instance use karein
+      const { data } = await api.post("/inquiries/send-inquiry", payload);
+
+      if (data.success) {
+        Swal.fire(
+          "Success!",
+          "Your inquiry has been sent to the seller.",
+          "success",
+        );
+        setIsModalOpen(false);
+        setFormData({ email: "", quantity: "", whatsapp: "", message: "" });
+      }
+    } catch (error) {
+      console.error("Inquiry Error:", error);
+      const msg = error.response?.data?.message || "Failed to send inquiry";
+      Swal.fire("Error", msg, "error");
+    } finally {
+      setIsSubmitting(false);
     }
-  }
-}, [products]); // Products load hone ka wait karega
+  };
+
+  useEffect(() => {
+    const pendingProductId = localStorage.getItem("pendingInquiryProductId");
+    const buyerData = localStorage.getItem("buyerInfo");
+
+    // Agar product ID hai aur banda ab login ho chuka hai
+    if (pendingProductId && buyerData && products.length > 0) {
+      const product = products.find((p) => p._id === pendingProductId);
+      if (product) {
+        setSelectedProduct(product);
+        setIsModalOpen(true);
+        // Kaam ho gaya, ab clean up kar do taaki baar-baar na khule
+        localStorage.removeItem("pendingInquiryProductId");
+      }
+    }
+  }, [products]); // Products load hone ka wait karega
 
   return (
     <div className="min-h-screen w-full  font-sans text-slate-900  ">
@@ -366,61 +376,70 @@ useEffect(() => {
 
         {/* --- Simple & Clean Inquiry Modal --- */}
         {isModalOpen && selectedProduct && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white w-full max-w-4xl rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-300">
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center p-2 md:p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
+            {/* Parent Div: Added overflow-hidden and changed flex direction for mobile */}
+            <div className="bg-white w-full max-w-4xl rounded-[1.5rem] md:rounded-[2rem] overflow-hidden shadow-2xl flex flex-col md:flex-row animate-in fade-in zoom-in duration-300 my-auto">
               {/* 1. LEFT PANEL: PRODUCT PREVIEW */}
-              <div className="md:w-[35%] bg-slate-50 p-8 border-r border-slate-100 flex flex-col">
-                <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-6 block">
+              {/* Mobile par padding kam ki hai aur flex-row kiya hai taaki space bache */}
+              <div className="md:w-[35%] bg-slate-50 p-6 md:p-8 border-b md:border-b-0 md:border-r border-slate-100 flex flex-row md:flex-col items-center md:items-start gap-4 md:gap-0">
+                <span className="hidden md:block text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-6">
                   Inquiry For
                 </span>
 
-                <div className="aspect-square rounded-2xl overflow-hidden bg-white border border-slate-200 mb-6 shadow-sm">
+                {/* Image Container: Desktop par full width par limited height, Mobile par side mein choti image */}
+                <div className="w-24 h-24 md:w-full md:h-44 rounded-xl md:rounded-2xl overflow-hidden bg-white border border-slate-200 md:mb-6 shadow-sm shrink-0">
                   <img
                     src={selectedProduct.image}
                     alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain md:object-cover bg-slate-50"
                   />
                 </div>
 
-                <h4 className="text-xl font-bold text-[#0B184A] mb-2 leading-tight">
-                  {selectedProduct.name}
-                </h4>
+                <div className="flex-1">
+                  <h4 className="text-lg md:text-xl font-bold text-[#0B184A] mb-1 md:mb-2 leading-tight line-clamp-1 md:line-clamp-none">
+                    {selectedProduct.name}
+                  </h4>
 
-                <p className="text-slate-500 text-xs leading-relaxed mb-6 line-clamp-4">
-                  {selectedProduct.description ||
-                    "Standard export quality product."}
-                </p>
+                  <p className="hidden md:block text-slate-500 text-xs leading-relaxed mb-6 line-clamp-4">
+                    {selectedProduct.description ||
+                      "Standard export quality product."}
+                  </p>
 
-                <div className="mt-auto bg-white border border-slate-200 rounded-xl p-4">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">
-                    HS Code
-                  </p>
-                  <p className="text-sm font-mono font-bold text-[#0B184A]">
-                    {selectedProduct.hscode || "Not Specified"}
-                  </p>
+                  <div className="bg-white border border-slate-200 rounded-lg md:rounded-xl p-2 md:p-4 inline-block md:block">
+                    <p className="text-[8px] md:text-[10px] font-bold text-slate-400 uppercase mb-0 md:mb-1">
+                      HS Code
+                    </p>
+                    <p className="text-xs md:text-sm font-mono font-bold text-[#0B184A]">
+                      {selectedProduct.hscode || "Not Specified"}
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* 2. RIGHT PANEL: ENQUIRY FORM */}
-              <div className="flex-1 p-8 md:p-10 bg-white relative">
+              {/* Mobile par padding adjust ki hai */}
+              <div className="flex-1 p-6 md:p-10 bg-white relative">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="absolute top-6 right-6 p-2 text-slate-400 hover:text-red-500 transition-colors"
+                  className="absolute top-4 right-4 md:top-6 md:right-6 p-2 text-slate-400 hover:text-red-500 transition-colors bg-slate-50 md:bg-transparent rounded-full"
                 >
-                  <X size={24} />
+                  <X size={20} md:size={24} />
                 </button>
 
-                <header className="mb-8">
-                  <h2 className="text-2xl font-bold text-[#0B184A]">
+                <header className="mb-6 md:mb-8">
+                  <h2 className="text-xl md:text-2xl font-bold text-[#0B184A]">
                     Send Inquiry
                   </h2>
-                  <p className="text-slate-400 text-sm mt-1">
+                  <p className="text-slate-400 text-xs md:text-sm mt-1">
                     Please fill the details for direct manufacturer response.
                   </p>
                 </header>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Email Field (Required) */}
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4 md:space-y-5"
+                >
+                  {/* Email Field */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-slate-600 ml-1">
                       Email Address <span className="text-red-500">*</span>
@@ -431,13 +450,13 @@ useEffect(() => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="example@business.com"
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                      className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
                       required
                     />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Quantity Needed Field (Required) */}
+                    {/* Quantity Field */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-bold text-slate-600 ml-1">
                         Quantity Needed <span className="text-red-500">*</span>
@@ -447,13 +466,13 @@ useEffect(() => {
                         type="text"
                         value={formData.quantity}
                         onChange={handleChange}
-                        placeholder="e.g. 1000 Units / 500 Kg"
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                        placeholder="e.g. 1000 Units"
+                        className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
                         required
                       />
                     </div>
 
-                    {/* WhatsApp Field (Optional) */}
+                    {/* WhatsApp Field */}
                     <div className="flex flex-col gap-1.5">
                       <label className="text-xs font-bold text-slate-600 ml-1">
                         WhatsApp (Optional)
@@ -464,12 +483,12 @@ useEffect(() => {
                         value={formData.whatsapp}
                         onChange={handleChange}
                         placeholder="+91..."
-                        className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
+                        className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium"
                       />
                     </div>
                   </div>
 
-                  {/* Detailed Message Field (Required) */}
+                  {/* Message Field */}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-slate-600 ml-1">
                       Detailed Message <span className="text-red-500">*</span>
@@ -478,9 +497,10 @@ useEffect(() => {
                       name="message"
                       value={formData.message}
                       onChange={handleChange}
-                      rows="5"
-                      placeholder="Describe your specific requirements, customization, or delivery timelines..."
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium resize-none"
+                      rows="3"
+                      md:rows="5"
+                      placeholder="Describe your requirements..."
+                      className="w-full px-4 py-2.5 md:py-3 rounded-xl bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white outline-none transition-all text-sm font-medium resize-none"
                       required
                     ></textarea>
                   </div>
@@ -488,8 +508,8 @@ useEffect(() => {
                   {/* Action Button */}
                   <button
                     type="submit"
-                    disabled={isSubmitting} // Disable button while submitting
-                    className={`w-full bg-[#0B184A] text-white font-bold py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 uppercase tracking-wider text-xs ${
+                    disabled={isSubmitting}
+                    className={`w-full bg-[#0B184A] text-white font-bold py-3.5 md:py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 uppercase tracking-wider text-xs ${
                       isSubmitting
                         ? "opacity-70 cursor-not-allowed"
                         : "hover:bg-blue-700 active:scale-[0.98]"
@@ -528,14 +548,14 @@ useEffect(() => {
               </button>
             </div>
 
-            {/* Product Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Product Grid - Wapas 4 columns par set kiya */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
               {/* Loading State */}
               {loading &&
                 [1, 2, 3, 4].map((n) => (
                   <div
                     key={n}
-                    className="h-[400px] bg-white rounded-[2.5rem] animate-pulse"
+                    className="h-[380px] bg-white rounded-[2rem] animate-pulse"
                   ></div>
                 ))}
 
@@ -544,79 +564,80 @@ useEffect(() => {
                 products.map((product) => (
                   <div
                     key={product._id}
-                    className="group bg-white rounded-[2.5rem] p-4 border border-slate-200 shadow-sm hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] transition-all duration-500 hover:-translate-y-2 flex flex-col"
+                    className="group bg-white rounded-[2rem] p-4 border border-slate-200 shadow-sm hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)] transition-all duration-500 hover:-translate-y-2 flex flex-col h-full"
                   >
-                    {/* Image Area */}
-                    <div className="relative h-64 w-full rounded-[2rem] overflow-hidden bg-slate-100 mb-5">
+                    {/* Image Area - Aspect Ratio use kiya taaki height balance rahe */}
+                    <div className="relative aspect-[4/3] w-full rounded-[1.5rem] overflow-hidden bg-slate-100 mb-4 shrink-0">
                       {product.image ? (
                         <img
-                          src={product.image} // ✅ Seedha URL use karo
+                          src={product.image}
                           alt={product.name}
                           className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-300">
-                          <Package size={48} />
+                          <Package size={32} />
                         </div>
                       )}
 
                       {/* Badge */}
-                      <div className="absolute top-4 left-4 bg-[#0B184A]/90 backdrop-blur text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider">
+                      <div className="absolute top-3 left-3 bg-[#0B184A]/90 backdrop-blur text-white text-[8px] font-bold px-2 py-1 rounded-full uppercase tracking-wider">
                         Export Ready
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="px-2 flex-1 flex flex-col">
-                      <p className="text-blue-600 text-[10px] font-black uppercase tracking-widest mb-2">
-                        {product.category}
-                      </p>
-                      <h4 className="text-xl font-black text-[#0B184A] leading-tight mb-2 line-clamp-1 group-hover:text-blue-700 transition-colors">
+                    <div className="px-1 flex-1 flex flex-col">
+                      {/* Category & Location */}
+                      <div className="flex justify-between items-center mb-2">
+                        <p className="text-blue-600 text-[9px] font-black uppercase tracking-widest truncate mr-2">
+                          {product.category}
+                        </p>
+                        {product.seller?.city && (
+                          <div className="flex items-center gap-1 text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 shrink-0">
+                            <MapPin size={8} className="text-red-500" />
+                            <span className="text-[8px] font-bold uppercase text-slate-600">
+                              {product.seller.city}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <h4 className="text-base font-black text-[#0B184A] leading-tight mb-2 line-clamp-1 group-hover:text-blue-700 transition-colors">
                         {product.name}
                       </h4>
-                      <p className="text-slate-500 text-xs font-medium  mb-auto">
-                        {product.description ||
-                          "Premium quality export product available for bulk orders."}
-                      </p>
+
+                      {/* Description - Fixed height/lines taaki card ki length same rahe */}
+                      <div className="flex-1">
+                        <p className="text-slate-500 text-[11px] font-medium leading-relaxed mb-4 line-clamp-3">
+                          {product.description ||
+                            "Premium quality export product available for bulk orders."}
+                        </p>
+                      </div>
 
                       {/* HS Code & Action */}
-                      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+                      <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-3">
                         <div>
-                          <span className="block text-[9px] font-black text-slate-400 uppercase">
+                          <span className="block text-[8px] font-black text-slate-400 uppercase">
                             HS Code
                           </span>
-                          <span className="font-mono font-bold text-slate-700 text-sm">
+                          <span className="font-mono font-bold text-slate-700 text-xs">
                             {product.hscode || "N/A"}
                           </span>
                         </div>
                         <button
                           onClick={() => {
-                            setSelectedProduct(product); // Product ka saara data set karega
-                            setIsModalOpen(true); // Modal khol dega
+                            setSelectedProduct(product);
+                            setIsModalOpen(true);
                           }}
-                          className="bg-[#0B184A] text-white px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-lg shadow-blue-900/20 active:scale-95"
+                          className="bg-[#0B184A] text-white px-3 py-2 rounded-lg text-[9px] font-bold uppercase tracking-wider hover:bg-blue-600 transition-colors shadow-md active:scale-95"
                         >
-                          Inquire
+                          Inquire Now
                         </button>
                       </div>
                     </div>
                   </div>
                 ))}
-
-              {/* Empty State (Agar products nahi hain) */}
-              {!loading && products.length === 0 && (
-                <div className="col-span-full text-center py-20 bg-white rounded-[3rem] border border-dashed border-slate-300">
-                  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Package size={32} className="text-slate-300" />
-                  </div>
-                  <h3 className="font-bold text-slate-500">
-                    No products listed yet
-                  </h3>
-                  <p className="text-slate-400 text-sm">
-                    Be the first exporter to list!
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         </section>
